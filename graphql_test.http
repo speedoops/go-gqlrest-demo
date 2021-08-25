@@ -1,0 +1,72 @@
+### TODO 样例
+POST http://localhost:8080/query HTTP/1.1
+content-type: application/json
+X-Request-Type: GraphQL
+
+mutation createTodo {
+  createTodo(input: {userId:"uid", text:"text"}){
+    id,text,done
+  }
+}
+
+### TODO 样例
+POST http://localhost:8080/query HTTP/1.1
+content-type: application/json
+X-Request-Type: GraphQL
+
+mutation updateTodo {
+  updateTodo(id: "T9527", input: {userId:"uid", text:"9527.Updated"}){
+    id,text,done
+  }
+}
+
+### TODO 样例
+POST http://localhost:8080/query HTTP/1.1
+content-type: application/json
+X-Request-Type: GraphQL
+
+query todos {
+  todos {
+    id
+    text
+    done
+  }
+}
+
+### TODO 样例
+POST http://localhost:8080/query HTTP/1.1
+content-type: application/json
+X-Request-Type: GraphQL
+
+mutation deleteTodo {
+  deleteTodo(userId:"uid")
+}
+
+### TODO 样例
+POST http://localhost:8080/graphql HTTP/1.1
+content-type: application/json
+X-Request-Type: GraphQL
+
+query todos {
+  todos {
+    id
+    text
+    done
+  }
+}
+
+###
+POST http://localhost:8080/graphql HTTP/1.1
+content-type: application/json
+X-Request-Type: GraphQL
+
+query queryByName($name: String!) {
+  vms(names:[$name]) {
+    id
+    name
+  }
+}
+
+{
+  "name": "test"
+}

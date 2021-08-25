@@ -1,0 +1,45 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Todo  {
+  id: ID! 
+  text: String! 
+  done: Boolean!
+  user: User! 
+  category: Category @hide(for:["rest","cli"])
+}
+
+type User {
+  id: ID!
+  name: String! @hide(for:["rest","cli"])
+}
+
+type Category {
+  id: ID! @hide(for:["rest","cli"])
+  name: String!
+}
+
+extend type Query {
+  todo(id:ID!, name: String): Todo! @http(url:"/todo/{id}")
+  todos(ids: [ID!], userId: ID, userId2: ID!, text: String, text2: String!, 
+    done: Boolean, done2: Boolean!, pageOffset: Int, pageSize: Int): [Todo!]! @http(url:"/todos")
+}
+
+input NewTodoInput {
+  text: String!
+  userID: String!
+  done: Boolean
+}
+
+input UpdateTodoInput {
+  text: String!
+  userID: String!
+}
+
+extend type Mutation {
+  createTodo(input: NewTodoInput!): Todo! @http(url:"/todo")
+  updateTodo(id: ID!, input: NewTodoInput!): Todo! @http(url:"/todo/{id}", method:"PUT")
+  deleteTodo(id: ID!): Boolean! @http(url:"/todo/{id}", method:"DELETE")
+  deleteTodoByUser(userID: ID!): Boolean! @hasRole(role: ADMIN) @hide(for:["rest"]) 
+}

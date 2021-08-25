@@ -1,0 +1,10 @@
+# GraphQL图入口定义
+# https://graphql-rules.com/
+# ----------------
+schema {
+	query: Query
+	mutation: Mutation
+}
+
+type Mutation 
+type Query 

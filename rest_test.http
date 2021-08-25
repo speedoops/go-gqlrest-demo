@@ -1,0 +1,50 @@
+
+###
+POST http://localhost:8080/api/v1/todo HTTP/1.1
+content-type: application/json
+
+{
+    "userID":"uid",
+    "text":"text",
+    "done": false
+}
+
+###
+# PUT http://localhost:8080/api/v1/todo/T9527?verbose=true&lang=zh-CN HTTP/1.1
+PUT http://localhost:8080/api/v1/todo/T9527
+content-type: application/json
+
+{
+    "userID":"uid0", 
+    "text":"textPUT"
+}
+
+###
+GET http://localhost:8080/api/v1/todos?ids=1,2,3,4&ids=5,6
+
+###
+GET http://localhost:8080/api/v1/non-exist?ids=1,2,3,4&ids=5,6
+
+###
+DELETE http://localhost:8080/api/v1/todos/uid0
+
+###
+GET http://localhost:8080/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true
+
+###
+POST http://localhost:8080/api/v1/todo
+content-type: application/json
+
+{"input": {"userID":"uid", "text":"$text"}}
+
+###
+PUT http://localhost:8080/api/v1/todo/T9527
+content-type: application/json
+
+{"input": {"userID":"uid", "text":"$text.Updated"}}
+
+###
+DELETE http://localhost:8080/api/v1/todo/T9527
+
+### 
+GET http://localhost:8080/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true
