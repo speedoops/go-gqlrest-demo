@@ -27,6 +27,7 @@ type UpdateTodoInput struct {
 type User struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	Role string `json:"role"`
 }
 
 type Role string

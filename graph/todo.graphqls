@@ -2,17 +2,21 @@
 #
 # https://gqlgen.com/getting-started/
 
+# https://github.com/99designs/gqlgen/issues/1579
+#directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
+
 type Todo  {
   id: ID! 
   text: String! 
-  done: Boolean!
+  done: Boolean! @deprecated(reason:"blah blah")
   user: User! 
-  category: Category @hide(for:["rest","cli"])
+  category: [Category!] @hide(for:["rest0","cli"])
 }
 
 type User {
   id: ID!
-  name: String! @hide(for:["rest","cli"])
+  name: String!
+  role: String! @hide(for:["rest","cli"])
 }
 
 type Category {
@@ -21,9 +25,9 @@ type Category {
 }
 
 extend type Query {
-  todo(id:ID!, name: String): Todo! @http(url:"/todo/{id}")
+  todo(id:ID!, name: String): Todo! @http(url:"/api/v1/todo/{id}")
   todos(ids: [ID!], userId: ID, userId2: ID!, text: String, text2: String!, 
-    done: Boolean, done2: Boolean!, pageOffset: Int, pageSize: Int): [Todo!]! @http(url:"/todos")
+    done: Boolean, done2: Boolean!, pageOffset: Int, pageSize: Int): [Todo!]! @http(url:"/api/v1/todos")
 }
 
 input NewTodoInput {
@@ -38,8 +42,8 @@ input UpdateTodoInput {
 }
 
 extend type Mutation {
-  createTodo(input: NewTodoInput!): Todo! @http(url:"/todo")
-  updateTodo(id: ID!, input: NewTodoInput!): Todo! @http(url:"/todo/{id}", method:"PUT")
-  deleteTodo(id: ID!): Boolean! @http(url:"/todo/{id}", method:"DELETE")
+  createTodo(input: NewTodoInput!): Todo! @http(url:"/api/v1/todo")
+  updateTodo(id: ID!, input: NewTodoInput!): Todo! @http(url:"/api/v1/todo/{id}", method:"PUT")
+  deleteTodo(id: ID!): Boolean! @http(url:"/api/v1/todo/{id}", method:"DELETE")
   deleteTodoByUser(userID: ID!): Boolean! @hasRole(role: ADMIN) @hide(for:["rest"]) 
 }

@@ -10,10 +10,10 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
-	"github.com/speedoops/gql2rest/handlerx"
-	"github.com/vektah/gqlgen-todos/graph"
-	"github.com/vektah/gqlgen-todos/graph/generated"
-	"github.com/vektah/gqlgen-todos/graph/model"
+	"github.com/speedoops/go-gqlrest-demo/graph"
+	"github.com/speedoops/go-gqlrest-demo/graph/generated"
+	"github.com/speedoops/go-gqlrest-demo/graph/model"
+	"github.com/speedoops/go-gqlrest/handlerx"
 )
 
 const defaultPort = "8080"
@@ -56,7 +56,7 @@ func main() {
 	r.Handle("/query", srv)
 	// r.Handle("/graphql", srv)
 
-	generated.RegisterHandlers("/api/v1", r, srv)
+	generated.RegisterHandlers("", r, srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))

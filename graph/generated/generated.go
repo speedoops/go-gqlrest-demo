@@ -13,7 +13,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/vektah/gqlgen-todos/graph/model"
+	"github.com/speedoops/go-gqlrest-demo/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -85,6 +85,7 @@ type ComplexityRoot struct {
 	User struct {
 		ID   func(childComplexity int) int
 		Name func(childComplexity int) int
+		Role func(childComplexity int) int
 	}
 }
 
@@ -104,7 +105,7 @@ type QueryResolver interface {
 }
 type TodoResolver interface {
 	User(ctx context.Context, obj *model.Todo) (*model.User, error)
-	Category(ctx context.Context, obj *model.Todo) (*model.Category, error)
+	Category(ctx context.Context, obj *model.Todo) ([]*model.Category, error)
 }
 
 type executableSchema struct {
@@ -285,6 +286,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Name(childComplexity), true
 
+	case "User.role":
+		if e.complexity.User.Role == nil {
+			break
+		}
+
+		return e.complexity.User.Role(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -412,17 +420,21 @@ type Query
 #
 # https://gqlgen.com/getting-started/
 
+# https://github.com/99designs/gqlgen/issues/1579
+#directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
+
 type Todo  {
   id: ID! 
   text: String! 
-  done: Boolean!
+  done: Boolean! @deprecated(reason:"blah blah")
   user: User! 
-  category: Category @hide(for:["rest","cli"])
+  category: [Category!] @hide(for:["rest0","cli"])
 }
 
 type User {
   id: ID!
-  name: String! @hide(for:["rest","cli"])
+  name: String!
+  role: String! @hide(for:["rest","cli"])
 }
 
 type Category {
@@ -431,9 +443,9 @@ type Category {
 }
 
 extend type Query {
-  todo(id:ID!, name: String): Todo! @http(url:"/todo/{id}")
+  todo(id:ID!, name: String): Todo! @http(url:"/api/v1/todo/{id}")
   todos(ids: [ID!], userId: ID, userId2: ID!, text: String, text2: String!, 
-    done: Boolean, done2: Boolean!, pageOffset: Int, pageSize: Int): [Todo!]! @http(url:"/todos")
+    done: Boolean, done2: Boolean!, pageOffset: Int, pageSize: Int): [Todo!]! @http(url:"/api/v1/todos")
 }
 
 input NewTodoInput {
@@ -448,9 +460,9 @@ input UpdateTodoInput {
 }
 
 extend type Mutation {
-  createTodo(input: NewTodoInput!): Todo! @http(url:"/todo")
-  updateTodo(id: ID!, input: NewTodoInput!): Todo! @http(url:"/todo/{id}", method:"PUT")
-  deleteTodo(id: ID!): Boolean! @http(url:"/todo/{id}", method:"DELETE")
+  createTodo(input: NewTodoInput!): Todo! @http(url:"/api/v1/todo")
+  updateTodo(id: ID!, input: NewTodoInput!): Todo! @http(url:"/api/v1/todo/{id}", method:"PUT")
+  deleteTodo(id: ID!): Boolean! @http(url:"/api/v1/todo/{id}", method:"DELETE")
   deleteTodoByUser(userID: ID!): Boolean! @hasRole(role: ADMIN) @hide(for:["rest"]) 
 }`, BuiltIn: false},
 }
@@ -466,7 +478,7 @@ func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[st
 	var arg0 model.Role
 	if tmp, ok := rawArgs["role"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-		arg0, err = ec.unmarshalNRole2githubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐRole(ctx, tmp)
+		arg0, err = ec.unmarshalNRole2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐRole(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -535,7 +547,7 @@ func (ec *executionContext) field_Mutation_createTodo_args(ctx context.Context, 
 	var arg0 model.NewTodoInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewTodoInput2githubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐNewTodoInput(ctx, tmp)
+		arg0, err = ec.unmarshalNNewTodoInput2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐNewTodoInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -589,7 +601,7 @@ func (ec *executionContext) field_Mutation_updateTodo_args(ctx context.Context, 
 	var arg1 model.NewTodoInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNNewTodoInput2githubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐNewTodoInput(ctx, tmp)
+		arg1, err = ec.unmarshalNNewTodoInput2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐNewTodoInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -885,7 +897,7 @@ func (ec *executionContext) _Mutation_createTodo(ctx context.Context, field grap
 			return ec.resolvers.Mutation().CreateTodo(rctx, args["input"].(model.NewTodoInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			url, err := ec.unmarshalNString2string(ctx, "/todo")
+			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todo")
 			if err != nil {
 				return nil, err
 			}
@@ -905,7 +917,7 @@ func (ec *executionContext) _Mutation_createTodo(ctx context.Context, field grap
 		if data, ok := tmp.(*model.Todo); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/vektah/gqlgen-todos/graph/model.Todo`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/speedoops/go-gqlrest-demo/graph/model.Todo`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -919,7 +931,7 @@ func (ec *executionContext) _Mutation_createTodo(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateTodo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -951,7 +963,7 @@ func (ec *executionContext) _Mutation_updateTodo(ctx context.Context, field grap
 			return ec.resolvers.Mutation().UpdateTodo(rctx, args["id"].(string), args["input"].(model.NewTodoInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			url, err := ec.unmarshalNString2string(ctx, "/todo/{id}")
+			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todo/{id}")
 			if err != nil {
 				return nil, err
 			}
@@ -975,7 +987,7 @@ func (ec *executionContext) _Mutation_updateTodo(ctx context.Context, field grap
 		if data, ok := tmp.(*model.Todo); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/vektah/gqlgen-todos/graph/model.Todo`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/speedoops/go-gqlrest-demo/graph/model.Todo`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -989,7 +1001,7 @@ func (ec *executionContext) _Mutation_updateTodo(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteTodo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1021,7 +1033,7 @@ func (ec *executionContext) _Mutation_deleteTodo(ctx context.Context, field grap
 			return ec.resolvers.Mutation().DeleteTodo(rctx, args["id"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			url, err := ec.unmarshalNString2string(ctx, "/todo/{id}")
+			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todo/{id}")
 			if err != nil {
 				return nil, err
 			}
@@ -1091,7 +1103,7 @@ func (ec *executionContext) _Mutation_deleteTodoByUser(ctx context.Context, fiel
 			return ec.resolvers.Mutation().DeleteTodoByUser(rctx, args["userID"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			role, err := ec.unmarshalNRole2githubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐRole(ctx, "ADMIN")
+			role, err := ec.unmarshalNRole2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -1390,7 +1402,7 @@ func (ec *executionContext) _Query_overlapping(ctx context.Context, field graphq
 	}
 	res := resTmp.(*model.OverlappingFields)
 	fc.Result = res
-	return ec.marshalOOverlappingFields2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐOverlappingFields(ctx, field.Selections, res)
+	return ec.marshalOOverlappingFields2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐOverlappingFields(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_todo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1422,7 +1434,7 @@ func (ec *executionContext) _Query_todo(ctx context.Context, field graphql.Colle
 			return ec.resolvers.Query().Todo(rctx, args["id"].(string), args["name"].(*string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			url, err := ec.unmarshalNString2string(ctx, "/todo/{id}")
+			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todo/{id}")
 			if err != nil {
 				return nil, err
 			}
@@ -1442,7 +1454,7 @@ func (ec *executionContext) _Query_todo(ctx context.Context, field graphql.Colle
 		if data, ok := tmp.(*model.Todo); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/vektah/gqlgen-todos/graph/model.Todo`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/speedoops/go-gqlrest-demo/graph/model.Todo`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1456,7 +1468,7 @@ func (ec *executionContext) _Query_todo(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*model.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_todos(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1488,7 +1500,7 @@ func (ec *executionContext) _Query_todos(ctx context.Context, field graphql.Coll
 			return ec.resolvers.Query().Todos(rctx, args["ids"].([]string), args["userId"].(*string), args["userId2"].(string), args["text"].(*string), args["text2"].(string), args["done"].(*bool), args["done2"].(bool), args["pageOffset"].(*int), args["pageSize"].(*int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			url, err := ec.unmarshalNString2string(ctx, "/todos")
+			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todos")
 			if err != nil {
 				return nil, err
 			}
@@ -1508,7 +1520,7 @@ func (ec *executionContext) _Query_todos(ctx context.Context, field graphql.Coll
 		if data, ok := tmp.([]*model.Todo); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/vektah/gqlgen-todos/graph/model.Todo`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/speedoops/go-gqlrest-demo/graph/model.Todo`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1522,7 +1534,7 @@ func (ec *executionContext) _Query_todos(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]*model.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚕᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐTodoᚄ(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚕᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐTodoᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1733,7 +1745,7 @@ func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Todo_category(ctx context.Context, field graphql.CollectedField, obj *model.Todo) (ret graphql.Marshaler) {
@@ -1758,7 +1770,7 @@ func (ec *executionContext) _Todo_category(ctx context.Context, field graphql.Co
 			return ec.resolvers.Todo().Category(rctx, obj)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			forArg, err := ec.unmarshalNString2ᚕstringᚄ(ctx, []interface{}{"rest", "cli"})
+			forArg, err := ec.unmarshalNString2ᚕstringᚄ(ctx, []interface{}{"rest0", "cli"})
 			if err != nil {
 				return nil, err
 			}
@@ -1775,10 +1787,10 @@ func (ec *executionContext) _Todo_category(ctx context.Context, field graphql.Co
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*model.Category); ok {
+		if data, ok := tmp.([]*model.Category); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/vektah/gqlgen-todos/graph/model.Category`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/speedoops/go-gqlrest-demo/graph/model.Category`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1787,9 +1799,9 @@ func (ec *executionContext) _Todo_category(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Category)
+	res := resTmp.([]*model.Category)
 	fc.Result = res
-	return ec.marshalOCategory2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐCategory(ctx, field.Selections, res)
+	return ec.marshalOCategory2ᚕᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐCategoryᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -1844,9 +1856,44 @@ func (ec *executionContext) _User_name(ctx context.Context, field graphql.Collec
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_role(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return obj.Name, nil
+			return obj.Role, nil
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			forArg, err := ec.unmarshalNString2ᚕstringᚄ(ctx, []interface{}{"rest", "cli"})
@@ -3372,6 +3419,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "role":
+			out.Values[i] = ec._User_role(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3648,6 +3700,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNCategory2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v *model.Category) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Category(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3678,18 +3740,18 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewTodoInput2githubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐNewTodoInput(ctx context.Context, v interface{}) (model.NewTodoInput, error) {
+func (ec *executionContext) unmarshalNNewTodoInput2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐNewTodoInput(ctx context.Context, v interface{}) (model.NewTodoInput, error) {
 	res, err := ec.unmarshalInputNewTodoInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNRole2githubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
+func (ec *executionContext) unmarshalNRole2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
 	var res model.Role
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRole2githubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
+func (ec *executionContext) marshalNRole2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
 	return v
 }
 
@@ -3744,11 +3806,11 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) marshalNTodo2githubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v model.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNTodo2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v model.Todo) graphql.Marshaler {
 	return ec._Todo(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐTodoᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐTodoᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Todo) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3772,7 +3834,7 @@ func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋvektahᚋgqlgenᚑ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTodo2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐTodo(ctx, sel, v[i])
+			ret[i] = ec.marshalNTodo2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐTodo(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3792,7 +3854,7 @@ func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋvektahᚋgqlgenᚑ
 	return ret
 }
 
-func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v *model.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v *model.Todo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3802,11 +3864,11 @@ func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtod
 	return ec._Todo(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4097,11 +4159,51 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) marshalOCategory2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v *model.Category) graphql.Marshaler {
+func (ec *executionContext) marshalOCategory2ᚕᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Category) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._Category(ctx, sel, v)
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCategory2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐCategory(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOID2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
@@ -4176,7 +4278,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return graphql.MarshalInt(*v)
 }
 
-func (ec *executionContext) marshalOOverlappingFields2ᚖgithubᚗcomᚋvektahᚋgqlgenᚑtodosᚋgraphᚋmodelᚐOverlappingFields(ctx context.Context, sel ast.SelectionSet, v *model.OverlappingFields) graphql.Marshaler {
+func (ec *executionContext) marshalOOverlappingFields2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐOverlappingFields(ctx context.Context, sel ast.SelectionSet, v *model.OverlappingFields) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

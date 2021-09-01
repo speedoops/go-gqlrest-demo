@@ -4,7 +4,7 @@ package graph
 // will be copied through when generating and any unknown code will be moved to the end.
 
 import (
-	"github.com/vektah/gqlgen-todos/graph/generated"
+	"github.com/speedoops/go-gqlrest-demo/graph/generated"
 )
 
 // Mutation returns generated.MutationResolver implementation.

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	chi "github.com/go-chi/chi/v5"
-	"github.com/speedoops/gql2rest/handlerx"
+	"github.com/speedoops/go-gqlrest/handlerx"
 )
 
 func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
@@ -27,10 +27,10 @@ func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
 		restArguments["overlapping"] = methodArguments
 	}
 	{ // todo
-		r.Method("GET", prefix+"/todo/{id}", srv)
+		r.Method("GET", prefix+"/api/v1/todo/{id}", srv)
 
-		restOperation["GET"+":"+prefix+"/todo/{id}"] = "todo"
-		restSelection["todo"] = "{id,text,done,user{id}}"
+		restOperation["GET"+":"+prefix+"/api/v1/todo/{id}"] = "todo"
+		restSelection["todo"] = "{id,text,done,user{id,name},category{name}}"
 
 		methodArguments := make(handlerx.ArgumentsType)
 		methodArguments["id"] = "ID!"
@@ -38,10 +38,10 @@ func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
 		restArguments["todo"] = methodArguments
 	}
 	{ // todos
-		r.Method("GET", prefix+"/todos", srv)
+		r.Method("GET", prefix+"/api/v1/todos", srv)
 
-		restOperation["GET"+":"+prefix+"/todos"] = "todos"
-		restSelection["todos"] = "{id,text,done,user{id}}"
+		restOperation["GET"+":"+prefix+"/api/v1/todos"] = "todos"
+		restSelection["todos"] = "{id,text,done,user{id,name},category{name}}"
 
 		methodArguments := make(handlerx.ArgumentsType)
 		methodArguments["ids"] = "[ID!]"
@@ -58,20 +58,20 @@ func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
 
 	// Mutation
 	{ // createTodo
-		r.Method("POST", prefix+"/todo", srv)
+		r.Method("POST", prefix+"/api/v1/todo", srv)
 
-		restOperation["POST"+":"+prefix+"/todo"] = "createTodo"
-		restSelection["createTodo"] = "{id,text,done,user{id}}"
+		restOperation["POST"+":"+prefix+"/api/v1/todo"] = "createTodo"
+		restSelection["createTodo"] = "{id,text,done,user{id,name},category{name}}"
 
 		methodArguments := make(handlerx.ArgumentsType)
 		methodArguments["input"] = "NewTodoInput!"
 		restArguments["createTodo"] = methodArguments
 	}
 	{ // updateTodo
-		r.Method("PUT", prefix+"/todo/{id}", srv)
+		r.Method("PUT", prefix+"/api/v1/todo/{id}", srv)
 
-		restOperation["PUT"+":"+prefix+"/todo/{id}"] = "updateTodo"
-		restSelection["updateTodo"] = "{id,text,done,user{id}}"
+		restOperation["PUT"+":"+prefix+"/api/v1/todo/{id}"] = "updateTodo"
+		restSelection["updateTodo"] = "{id,text,done,user{id,name},category{name}}"
 
 		methodArguments := make(handlerx.ArgumentsType)
 		methodArguments["id"] = "ID!"
@@ -79,9 +79,9 @@ func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
 		restArguments["updateTodo"] = methodArguments
 	}
 	{ // deleteTodo
-		r.Method("DELETE", prefix+"/todo/{id}", srv)
+		r.Method("DELETE", prefix+"/api/v1/todo/{id}", srv)
 
-		restOperation["DELETE"+":"+prefix+"/todo/{id}"] = "deleteTodo"
+		restOperation["DELETE"+":"+prefix+"/api/v1/todo/{id}"] = "deleteTodo"
 		restSelection["deleteTodo"] = ""
 
 		methodArguments := make(handlerx.ArgumentsType)

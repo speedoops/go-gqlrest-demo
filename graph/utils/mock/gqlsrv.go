@@ -15,12 +15,12 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
-	"github.com/speedoops/gql2rest/handlerx"
+	"github.com/speedoops/go-gqlrest-demo/config"
+	"github.com/speedoops/go-gqlrest-demo/graph/errorsx"
+	"github.com/speedoops/go-gqlrest-demo/graph/generated"
+	"github.com/speedoops/go-gqlrest-demo/graph/model"
+	"github.com/speedoops/go-gqlrest/handlerx"
 	"github.com/tal-tech/go-zero/core/logx"
-	"github.com/vektah/gqlgen-todos/config"
-	"github.com/vektah/gqlgen-todos/graph/errorsx"
-	"github.com/vektah/gqlgen-todos/graph/generated"
-	"github.com/vektah/gqlgen-todos/graph/model"
 )
 
 // FindConfigFile 查找并返回 config.yaml 的完整路径
@@ -87,7 +87,7 @@ func NewGraphQLServer(resolver generated.ResolverRoot) http.Handler {
 	})
 	mux.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	mux.Handle("/query", srv)
-	generated.RegisterHandlers("/api/v1", mux, srv)
+	generated.RegisterHandlers("", mux, srv)
 
 	return &Server{mux: mux, srv: srv}
 }

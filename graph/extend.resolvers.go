@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vektah/gqlgen-todos/graph/generated"
-	"github.com/vektah/gqlgen-todos/graph/model"
+	"github.com/speedoops/go-gqlrest-demo/graph/generated"
+	"github.com/speedoops/go-gqlrest-demo/graph/model"
 )
 
 func (r *overlappingFieldsResolver) OldFoo(ctx context.Context, obj *model.OverlappingFields) (int, error) {
