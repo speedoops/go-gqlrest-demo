@@ -12,13 +12,13 @@ content-type: application/json
 {"input": {"userID":"uid", "text":"$text"}}
 
 ###
-PUT http://localhost:8080/api/v1/todo/T9527
+PUT http://localhost:8080/api/v1/todo/T95270
 content-type: application/json
 
 {"input": {"userID":"uid", "text":"$text.Updated"}}
 
 ###
-DELETE http://localhost:8080/api/v1/todo/T9527
+DELETE http://localhost:8080/api/v1/todo/T95270
 
 ### 
 GET http://localhost:8080/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true

@@ -4,7 +4,7 @@ content-type: application/json
 X-Request-Type: GraphQL
 
 mutation createTodo {
-  createTodo(input: {userId:"uid", text:"text"}){
+  createTodo(input: {userID:"uid", text:"text"}){
     id,text,done
   }
 }
@@ -15,7 +15,7 @@ content-type: application/json
 X-Request-Type: GraphQL
 
 mutation updateTodo {
-  updateTodo(id: "T9527", input: {userId:"uid", text:"9527.Updated"}){
+  updateTodo(input: {id: "T9527", userID:"uid", text:"9527.Updated"}){
     id,text,done
   }
 }
@@ -26,7 +26,7 @@ content-type: application/json
 X-Request-Type: GraphQL
 
 query todos {
-  todos {
+  todos(ids:["T9527"],userId2:"userID2",text2:"text2",done2:true) {
     id
     text
     done
@@ -39,7 +39,7 @@ content-type: application/json
 X-Request-Type: GraphQL
 
 mutation deleteTodo {
-  deleteTodo(userId:"uid")
+  deleteTodoByUser(userID:"uid")
 }
 
 ### TODO 样例

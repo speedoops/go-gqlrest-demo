@@ -59,7 +59,7 @@ type ComplexityRoot struct {
 		CreateTodo       func(childComplexity int, input model.NewTodoInput) int
 		DeleteTodo       func(childComplexity int, id string) int
 		DeleteTodoByUser func(childComplexity int, userID string) int
-		UpdateTodo       func(childComplexity int, id string, input model.NewTodoInput) int
+		UpdateTodo       func(childComplexity int, input model.UpdateTodoInput) int
 	}
 
 	OverlappingFields struct {
@@ -70,7 +70,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Overlapping func(childComplexity int) int
-		Todo        func(childComplexity int, id string, name *string) int
+		Todo        func(childComplexity int, id string, name *string, tmp *int) int
 		Todos       func(childComplexity int, ids []string, userID *string, userID2 string, text *string, text2 string, done *bool, done2 bool, pageOffset *int, pageSize *int) int
 	}
 
@@ -91,7 +91,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateTodo(ctx context.Context, input model.NewTodoInput) (*model.Todo, error)
-	UpdateTodo(ctx context.Context, id string, input model.NewTodoInput) (*model.Todo, error)
+	UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.Todo, error)
 	DeleteTodo(ctx context.Context, id string) (bool, error)
 	DeleteTodoByUser(ctx context.Context, userID string) (bool, error)
 }
@@ -100,7 +100,7 @@ type OverlappingFieldsResolver interface {
 }
 type QueryResolver interface {
 	Overlapping(ctx context.Context) (*model.OverlappingFields, error)
-	Todo(ctx context.Context, id string, name *string) (*model.Todo, error)
+	Todo(ctx context.Context, id string, name *string, tmp *int) (*model.Todo, error)
 	Todos(ctx context.Context, ids []string, userID *string, userID2 string, text *string, text2 string, done *bool, done2 bool, pageOffset *int, pageSize *int) ([]*model.Todo, error)
 }
 type TodoResolver interface {
@@ -183,7 +183,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateTodo(childComplexity, args["id"].(string), args["input"].(model.NewTodoInput)), true
+		return e.complexity.Mutation.UpdateTodo(childComplexity, args["input"].(model.UpdateTodoInput)), true
 
 	case "OverlappingFields.oneFoo", "OverlappingFields.twoFoo":
 		if e.complexity.OverlappingFields.Foo == nil {
@@ -223,7 +223,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Todo(childComplexity, args["id"].(string), args["name"].(*string)), true
+		return e.complexity.Query.Todo(childComplexity, args["id"].(string), args["name"].(*string), args["tmp"].(*int)), true
 
 	case "Query.todos":
 		if e.complexity.Query.Todos == nil {
@@ -443,7 +443,7 @@ type Category {
 }
 
 extend type Query {
-  todo(id:ID!, name: String): Todo! @http(url:"/api/v1/todo/{id}")
+  todo(id:ID!, name: String, tmp:Int): Todo! @http(url:"/api/v1/todo/{id}")
   todos(ids: [ID!], userId: ID, userId2: ID!, text: String, text2: String!, 
     done: Boolean, done2: Boolean!, pageOffset: Int, pageSize: Int): [Todo!]! @http(url:"/api/v1/todos")
 }
@@ -455,15 +455,16 @@ input NewTodoInput {
 }
 
 input UpdateTodoInput {
+  id: ID! # https://www.apollographql.com/blog/graphql/basics/designing-graphql-mutations/
   text: String!
   userID: String!
 }
 
 extend type Mutation {
   createTodo(input: NewTodoInput!): Todo! @http(url:"/api/v1/todo")
-  updateTodo(id: ID!, input: NewTodoInput!): Todo! @http(url:"/api/v1/todo/{id}", method:"PUT")
+  updateTodo(input: UpdateTodoInput!): Todo! @http(url:"/api/v1/todo/{id}", method:"PUT")
   deleteTodo(id: ID!): Boolean! @http(url:"/api/v1/todo/{id}", method:"DELETE")
-  deleteTodoByUser(userID: ID!): Boolean! @hasRole(role: ADMIN) @hide(for:["rest"]) 
+  deleteTodoByUser(userID: ID!): Boolean! @http(url:"/api/v1/todos", method:"DELETE") @hasRole(role: ADMIN) @hide(for:["rest"]) 
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -589,24 +590,15 @@ func (ec *executionContext) field_Mutation_deleteTodo_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_updateTodo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 model.NewTodoInput
+	var arg0 model.UpdateTodoInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNNewTodoInput2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐNewTodoInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUpdateTodoInput2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐUpdateTodoInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -646,6 +638,15 @@ func (ec *executionContext) field_Query_todo_args(ctx context.Context, rawArgs m
 		}
 	}
 	args["name"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["tmp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tmp"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tmp"] = arg2
 	return args, nil
 }
 
@@ -960,7 +961,7 @@ func (ec *executionContext) _Mutation_updateTodo(ctx context.Context, field grap
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateTodo(rctx, args["id"].(string), args["input"].(model.NewTodoInput))
+			return ec.resolvers.Mutation().UpdateTodo(rctx, args["input"].(model.UpdateTodoInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todo/{id}")
@@ -1103,6 +1104,20 @@ func (ec *executionContext) _Mutation_deleteTodoByUser(ctx context.Context, fiel
 			return ec.resolvers.Mutation().DeleteTodoByUser(rctx, args["userID"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
+			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todos")
+			if err != nil {
+				return nil, err
+			}
+			method, err := ec.unmarshalOString2ᚖstring(ctx, "DELETE")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.Http == nil {
+				return nil, errors.New("directive http is not implemented")
+			}
+			return ec.directives.Http(ctx, nil, directive0, url, method)
+		}
+		directive2 := func(ctx context.Context) (interface{}, error) {
 			role, err := ec.unmarshalNRole2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
@@ -1110,9 +1125,9 @@ func (ec *executionContext) _Mutation_deleteTodoByUser(ctx context.Context, fiel
 			if ec.directives.HasRole == nil {
 				return nil, errors.New("directive hasRole is not implemented")
 			}
-			return ec.directives.HasRole(ctx, nil, directive0, role)
+			return ec.directives.HasRole(ctx, nil, directive1, role)
 		}
-		directive2 := func(ctx context.Context) (interface{}, error) {
+		directive3 := func(ctx context.Context) (interface{}, error) {
 			forArg, err := ec.unmarshalNString2ᚕstringᚄ(ctx, []interface{}{"rest"})
 			if err != nil {
 				return nil, err
@@ -1120,10 +1135,10 @@ func (ec *executionContext) _Mutation_deleteTodoByUser(ctx context.Context, fiel
 			if ec.directives.Hide == nil {
 				return nil, errors.New("directive hide is not implemented")
 			}
-			return ec.directives.Hide(ctx, nil, directive1, forArg)
+			return ec.directives.Hide(ctx, nil, directive2, forArg)
 		}
 
-		tmp, err := directive2(rctx)
+		tmp, err := directive3(rctx)
 		if err != nil {
 			return nil, graphql.ErrorOnPath(ctx, err)
 		}
@@ -1431,7 +1446,7 @@ func (ec *executionContext) _Query_todo(ctx context.Context, field graphql.Colle
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Todo(rctx, args["id"].(string), args["name"].(*string))
+			return ec.resolvers.Query().Todo(rctx, args["id"].(string), args["name"].(*string), args["tmp"].(*int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todo/{id}")
@@ -3103,6 +3118,14 @@ func (ec *executionContext) unmarshalInputUpdateTodoInput(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "text":
 			var err error
 
@@ -3862,6 +3885,11 @@ func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlr
 		return graphql.Null
 	}
 	return ec._Todo(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateTodoInput2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐUpdateTodoInput(ctx context.Context, v interface{}) (model.UpdateTodoInput, error) {
+	res, err := ec.unmarshalInputUpdateTodoInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {

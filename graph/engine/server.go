@@ -1,34 +1,25 @@
-package main
+package engine
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log"
-	"net/http"
-	"os"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/go-chi/chi/v5"
-	"github.com/speedoops/go-gqlrest-demo/graph"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/speedoops/go-gqlrest-demo/graph/errorsx"
 	"github.com/speedoops/go-gqlrest-demo/graph/generated"
 	"github.com/speedoops/go-gqlrest-demo/graph/model"
 	"github.com/speedoops/go-gqlrest/handlerx"
+	"github.com/tal-tech/go-zero/core/logx"
 )
 
-const defaultPort = "8080"
-
-func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
-
-	c := generated.Config{Resolvers: &graph.Resolver{}}
+func NewServer(resolver generated.ResolverRoot) *handler.Server {
+	c := generated.Config{Resolvers: resolver}
 	c.Directives.HasRole = func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (interface{}, error) {
 		if !getCurrentUser(ctx).HasRole(role) {
 			// block calling the next resolver
-			return nil, fmt.Errorf("Access denied")
+			return nil, errorsx.NewNotAllowedError(errors.New("access denied"))
 		}
 		log.Println("hasRole")
 
@@ -50,16 +41,13 @@ func main() {
 	}
 
 	srv := handlerx.NewDefaultServer(generated.NewExecutableSchema(c))
+	srv.SetErrorPresenter(errorsx.AppErrorPresenter)
+	srv.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
+		logx.ErrorStack("internal server error")
+		return errors.New("internal server error")
+	})
 
-	r := chi.NewRouter()
-	r.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	r.Handle("/query", srv)
-	// r.Handle("/graphql", srv)
-
-	generated.RegisterHandlers("", r, srv)
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	return srv
 }
 
 func getCurrentUser(ctx context.Context) model.User {

@@ -5,14 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch go-gqlrest server",
+            "name": "Launch server",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceRoot}",
         },
         {
-            "name": "Launch go-gqlrest codegen",
+            "name": "Launch codegen",
             "type": "go",
             "request": "launch",
             "mode": "auto",

@@ -20,6 +20,7 @@ type NewTodoInput struct {
 }
 
 type UpdateTodoInput struct {
+	ID     string `json:"id"`
 	Text   string `json:"text"`
 	UserID string `json:"userID"`
 }

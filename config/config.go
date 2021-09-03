@@ -4,11 +4,9 @@ import (
 	"github.com/tal-tech/go-zero/rest"
 )
 
-// Config 是本应用的配置类
 type Config struct {
 	rest.RestConf
 	GraphQL GraphQLConf
-	//Backend httpclient.Backend
 }
 
 type GraphQLConf struct {

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/speedoops/go-gqlrest-demo/graph/errorsx"
 	"github.com/speedoops/go-gqlrest-demo/graph/generated"
 	"github.com/speedoops/go-gqlrest-demo/graph/model"
 )
@@ -26,16 +27,16 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodoIn
 	return todo, nil
 }
 
-func (r *mutationResolver) UpdateTodo(ctx context.Context, id string, input model.NewTodoInput) (*model.Todo, error) {
+func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.Todo, error) {
 	list := r.todos
 	for _, l := range list {
-		if l.ID == id {
+		if l.ID == input.ID {
 			l.Text = input.Text
 			l.UserID = input.UserID
 			return l, nil
 		}
 	}
-	return nil, errors.New("not found")
+	return nil, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", input.ID))
 }
 
 func (r *mutationResolver) DeleteTodo(ctx context.Context, id string) (bool, error) {
@@ -48,7 +49,7 @@ func (r *mutationResolver) DeleteTodo(ctx context.Context, id string) (bool, err
 		}
 	}
 	if len(r.todos) == n {
-		return false, errors.New("not found")
+		return false, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", id))
 	}
 	r.todos = list[:n]
 	return true, nil
@@ -64,19 +65,19 @@ func (r *mutationResolver) DeleteTodoByUser(ctx context.Context, userID string) 
 		}
 	}
 	if len(r.todos) == n {
-		return false, errors.New("not found")
+		return false, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", userID))
 	}
 	r.todos = list[:n]
 	return true, nil
 }
 
-func (r *queryResolver) Todo(ctx context.Context, id string, name *string) (*model.Todo, error) {
+func (r *queryResolver) Todo(ctx context.Context, id string, name *string, tmp *int) (*model.Todo, error) {
 	for _, l := range r.todos {
 		if l.ID == id {
 			return l, nil
 		}
 	}
-	return nil, errors.New("not found")
+	return nil, errorsx.NewNotFoundError(errors.New("not found"))
 }
 
 func (r *queryResolver) Todos(ctx context.Context, ids []string, userID *string, userID2 string, text *string, text2 string, done *bool, done2 bool, pageOffset *int, pageSize *int) ([]*model.Todo, error) {

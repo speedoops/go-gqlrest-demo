@@ -9,21 +9,21 @@ import (
 	"github.com/speedoops/go-gqlrest/handlerx"
 )
 
-func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
+func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 	// REST URL => GraphQL Operation
-	restOperation := make(handlerx.RESTOperationType)
+	restOperation := make(handlerx.RESTOperationMappingType)
 	// GraphQL Operation => Fields Selection
-	restSelection := make(handlerx.RESTSelectionType)
+	restSelection := make(handlerx.RESTSelectionMappingType)
 	// GraphQL Operation => Arguments <Name,Type>
-	restArguments := make(handlerx.RESTArgumentsType)
+	restArguments := make(handlerx.RESTArgumentsMappingType)
 	// GraphQL Operation => Arguments <Name,Type>
-	restInputs := make(handlerx.RESTArgumentsType)
+	restInputs := make(handlerx.RESTArgumentsMappingType)
 
 	// Query
 	{ // overlapping
 		restSelection["overlapping"] = "{twoFoo,oldFoo,new_foo}"
 
-		methodArguments := make(handlerx.ArgumentsType)
+		methodArguments := make(handlerx.ArgNameArgTypePair)
 		restArguments["overlapping"] = methodArguments
 	}
 	{ // todo
@@ -32,9 +32,10 @@ func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
 		restOperation["GET"+":"+prefix+"/api/v1/todo/{id}"] = "todo"
 		restSelection["todo"] = "{id,text,done,user{id,name},category{name}}"
 
-		methodArguments := make(handlerx.ArgumentsType)
+		methodArguments := make(handlerx.ArgNameArgTypePair)
 		methodArguments["id"] = "ID!"
 		methodArguments["name"] = "String"
+		methodArguments["tmp"] = "Int"
 		restArguments["todo"] = methodArguments
 	}
 	{ // todos
@@ -43,7 +44,7 @@ func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
 		restOperation["GET"+":"+prefix+"/api/v1/todos"] = "todos"
 		restSelection["todos"] = "{id,text,done,user{id,name},category{name}}"
 
-		methodArguments := make(handlerx.ArgumentsType)
+		methodArguments := make(handlerx.ArgNameArgTypePair)
 		methodArguments["ids"] = "[ID!]"
 		methodArguments["userId"] = "ID"
 		methodArguments["userId2"] = "ID!"
@@ -63,7 +64,7 @@ func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
 		restOperation["POST"+":"+prefix+"/api/v1/todo"] = "createTodo"
 		restSelection["createTodo"] = "{id,text,done,user{id,name},category{name}}"
 
-		methodArguments := make(handlerx.ArgumentsType)
+		methodArguments := make(handlerx.ArgNameArgTypePair)
 		methodArguments["input"] = "NewTodoInput!"
 		restArguments["createTodo"] = methodArguments
 	}
@@ -73,9 +74,8 @@ func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
 		restOperation["PUT"+":"+prefix+"/api/v1/todo/{id}"] = "updateTodo"
 		restSelection["updateTodo"] = "{id,text,done,user{id,name},category{name}}"
 
-		methodArguments := make(handlerx.ArgumentsType)
-		methodArguments["id"] = "ID!"
-		methodArguments["input"] = "NewTodoInput!"
+		methodArguments := make(handlerx.ArgNameArgTypePair)
+		methodArguments["input"] = "UpdateTodoInput!"
 		restArguments["updateTodo"] = methodArguments
 	}
 	{ // deleteTodo
@@ -84,28 +84,32 @@ func RegisterHandlers(prefix string, r *chi.Mux, srv http.Handler) {
 		restOperation["DELETE"+":"+prefix+"/api/v1/todo/{id}"] = "deleteTodo"
 		restSelection["deleteTodo"] = ""
 
-		methodArguments := make(handlerx.ArgumentsType)
+		methodArguments := make(handlerx.ArgNameArgTypePair)
 		methodArguments["id"] = "ID!"
 		restArguments["deleteTodo"] = methodArguments
 	}
 	{ // deleteTodoByUser
+		r.Method("DELETE", prefix+"/api/v1/todos", srv)
+
+		restOperation["DELETE"+":"+prefix+"/api/v1/todos"] = "deleteTodoByUser"
 		restSelection["deleteTodoByUser"] = ""
 
-		methodArguments := make(handlerx.ArgumentsType)
+		methodArguments := make(handlerx.ArgNameArgTypePair)
 		methodArguments["userID"] = "ID!"
 		restArguments["deleteTodoByUser"] = methodArguments
 	}
 
 	// Input
 	{ // NewTodoInput
-		inputArguments := make(handlerx.ArgumentsType)
+		inputArguments := make(handlerx.ArgNameArgTypePair)
 		inputArguments["text"] = "String!"
 		inputArguments["userID"] = "String!"
 		inputArguments["done"] = "Boolean"
 		restInputs["NewTodoInput"] = inputArguments
 	}
 	{ // UpdateTodoInput
-		inputArguments := make(handlerx.ArgumentsType)
+		inputArguments := make(handlerx.ArgNameArgTypePair)
+		inputArguments["id"] = "ID!"
 		inputArguments["text"] = "String!"
 		inputArguments["userID"] = "String!"
 		restInputs["UpdateTodoInput"] = inputArguments
