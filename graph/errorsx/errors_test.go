@@ -32,8 +32,8 @@ func TestErrors(t *testing.T) {
 	err := validate("", "")
 	if err != nil {
 		if err, ok := err.(*inputError); ok {
-			fmt.Println(err)
-			fmt.Printf("Missing Field is %s\n", err.getMissingField())
+			_, _ = fmt.Println(err)
+			_, _ = fmt.Printf("Missing Field is %s\n", err.getMissingField())
 		}
 	}
 }

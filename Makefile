@@ -19,4 +19,4 @@ test:
 	go.exe test -timeout 30s -run ^TestTodo ./... -v
 
 lint:
-	golangci-lint run -v --timeout=5m
+	golangci-lint run --timeout=5m

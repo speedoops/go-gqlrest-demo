@@ -42,6 +42,7 @@ func TestTodo(t *testing.T) {
 		genRandomText := func() string {
 			return fmt.Sprintf("text_%s", time.Now().Format("2006-01-02 15:04:05"))
 		}
+
 		c.MustPost(mutation, &resp, gqlcli.Var("text", genRandomText()))
 		c.MustPost(mutation, &resp, gqlcli.Var("text", genRandomText()))
 		c.MustPost(mutation, &resp, gqlcli.Var("text", genRandomText()))
@@ -134,7 +135,7 @@ func TestTodos_REST(t *testing.T) {
 
 	t.Run("rest.createTodo", func(t *testing.T) {
 		var resp struct {
-			//nolint:staticcheck // ignore SA5008: unknown JSON option "squash"
+			//nolint:staticcheck,revive // ignore SA5008: unknown JSON option "squash"
 			Todo `json:",squash"`
 		}
 
@@ -148,7 +149,7 @@ func TestTodos_REST(t *testing.T) {
 
 	t.Run("rest.updateTodo", func(t *testing.T) {
 		var resp struct {
-			//nolint:staticcheck // ignore SA5008: unknown JSON option "squash"
+			//nolint:staticcheck,revive // ignore SA5008: unknown JSON option "squash"
 			Todo `json:",squash"`
 		}
 
@@ -167,7 +168,7 @@ func TestTodos_REST(t *testing.T) {
 
 	t.Run("rest.todos", func(t *testing.T) {
 		var resp struct {
-			Todos []Todo `json:"list"`
+			Todos []Todo `json:"results"`
 		}
 
 		err := c.Get("/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true", &resp)
@@ -188,7 +189,7 @@ func TestTodos_POST(t *testing.T) {
 
 	t.Run("rest.createTodo", func(t *testing.T) {
 		var resp struct {
-			//nolint:staticcheck // ignore SA5008: unknown JSON option "squash"
+			//nolint:staticcheck,revive // ignore SA5008: unknown JSON option "squash"
 			Todo `json:",squash"`
 		}
 
@@ -209,7 +210,7 @@ func TestTodos_GET(t *testing.T) {
 
 	t.Run("rest.todos", func(t *testing.T) {
 		var resp struct {
-			Todos []Todo `json:"list"`
+			Todos []Todo `json:"results"`
 		}
 
 		err := c.Get("/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true", &resp)
@@ -230,7 +231,7 @@ func TestTodos_PUT(t *testing.T) {
 
 	t.Run("rest.updateTodo", func(t *testing.T) {
 		var resp struct {
-			//nolint:staticcheck // ignore SA5008: unknown JSON option "squash"
+			//nolint:staticcheck,revive // ignore SA5008: unknown JSON option "squash"
 			Todo `json:",squash"`
 		}
 
