@@ -15,8 +15,9 @@ run:
 	go run main.go
 
 test:
-	# go test ./... -v
-	go.exe test -timeout 30s -run ^TestTodo ./... -v
+	@# go test ./... -v
+	@#go.exe test -timeout 30s -run ^TestTodo ./... -short -v
+	go.exe test -timeout 30s ./... -short -v
 
 lint:
 	golangci-lint run --timeout=5m
