@@ -75,11 +75,11 @@ type ComplexityRoot struct {
 	}
 
 	Todo struct {
-		Category func(childComplexity int) int
-		Done     func(childComplexity int) int
-		ID       func(childComplexity int) int
-		Text     func(childComplexity int) int
-		User     func(childComplexity int) int
+		Categories func(childComplexity int) int
+		Done       func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Text       func(childComplexity int) int
+		User       func(childComplexity int) int
 	}
 
 	User struct {
@@ -105,7 +105,7 @@ type QueryResolver interface {
 }
 type TodoResolver interface {
 	User(ctx context.Context, obj *model.Todo) (*model.User, error)
-	Category(ctx context.Context, obj *model.Todo) ([]*model.Category, error)
+	Categories(ctx context.Context, obj *model.Todo) ([]*model.Category, error)
 }
 
 type executableSchema struct {
@@ -237,12 +237,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Todos(childComplexity, args["ids"].([]string), args["userId"].(*string), args["userId2"].(string), args["text"].(*string), args["text2"].(string), args["done"].(*bool), args["done2"].(bool), args["pageOffset"].(*int), args["pageSize"].(*int)), true
 
-	case "Todo.category":
-		if e.complexity.Todo.Category == nil {
+	case "Todo.categories":
+		if e.complexity.Todo.Categories == nil {
 			break
 		}
 
-		return e.complexity.Todo.Category(childComplexity), true
+		return e.complexity.Todo.Categories(childComplexity), true
 
 	case "Todo.done":
 		if e.complexity.Todo.Done == nil {
@@ -423,49 +423,64 @@ type Query
 # https://github.com/99designs/gqlgen/issues/1579
 #directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
 
-type Todo  {
-  id: ID! 
-  text: String! 
-  done: Boolean! @deprecated(reason:"blah blah")
-  user: User! 
-  category: [Category!] @hide(for:["rest0","cli"])
+type Todo {
+	id: ID!
+	text: String!
+	done: Boolean! @deprecated(reason: "blah blah")
+	user: User!
+	categories: [Category!] @hide(for: ["rest0", "cli"])
 }
 
 type User {
-  id: ID!
-  name: String!
-  role: String! @hide(for:["rest","cli"])
+	id: ID!
+	name: String!
+	role: String! @hide(for: ["rest", "cli"])
 }
 
 type Category {
-  id: ID! @hide(for:["rest","cli"])
-  name: String!
+	id: ID! @hide(for: ["rest", "cli"])
+	name: String!
 }
 
 extend type Query {
-  todo(id:ID!, name: String, tmp:Int): Todo! @http(url:"/api/v1/todo/{id}")
-  todos(ids: [ID!], userId: ID, userId2: ID!, text: String, text2: String!, 
-    done: Boolean, done2: Boolean!, pageOffset: Int, pageSize: Int): [Todo!]! @http(url:"/api/v1/todos")
+	todo(id: ID!, name: String, tmp: Int): Todo! @http(url: "/api/v1/todo/{id}")
+	todos(
+		ids: [ID!]
+		userId: ID
+		userId2: ID!
+		text: String
+		text2: String!
+		done: Boolean
+		done2: Boolean!
+		pageOffset: Int
+		pageSize: Int
+	): [Todo!]! @http(url: "/api/v1/todos")
 }
 
 input NewTodoInput {
-  text: String!
-  userID: String!
-  done: Boolean
+	text: String!
+	userID: String!
+	done: Boolean
 }
 
 input UpdateTodoInput {
-  id: ID! # https://www.apollographql.com/blog/graphql/basics/designing-graphql-mutations/
-  text: String!
-  userID: String!
+	id: ID! # https://www.apollographql.com/blog/graphql/basics/designing-graphql-mutations/
+	text: String
+	userID: String
 }
 
 extend type Mutation {
-  createTodo(input: NewTodoInput!): Todo! @http(url:"/api/v1/todo")
-  updateTodo(input: UpdateTodoInput!): Todo! @http(url:"/api/v1/todo/{id}", method:"PUT")
-  deleteTodo(id: ID!): Boolean! @http(url:"/api/v1/todo/{id}", method:"DELETE")
-  deleteTodoByUser(userID: ID!): Boolean! @http(url:"/api/v1/todos", method:"DELETE") @hasRole(role: ADMIN) @hide(for:["rest"]) 
-}`, BuiltIn: false},
+	createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todo")
+	updateTodo(input: UpdateTodoInput!): Todo!
+		@http(url: "/api/v1/todo/{id}", method: "PUT")
+	deleteTodo(id: ID!): Boolean!
+		@http(url: "/api/v1/todo/{id}", method: "DELETE")
+	deleteTodoByUser(userID: ID!): Boolean!
+		@http(url: "/api/v1/todos", method: "DELETE")
+		@hasRole(role: ADMIN)
+		@hide(for: ["rest"])
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1763,7 +1778,7 @@ func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.Collec
 	return ec.marshalNUser2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Todo_category(ctx context.Context, field graphql.CollectedField, obj *model.Todo) (ret graphql.Marshaler) {
+func (ec *executionContext) _Todo_categories(ctx context.Context, field graphql.CollectedField, obj *model.Todo) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1782,7 +1797,7 @@ func (ec *executionContext) _Todo_category(ctx context.Context, field graphql.Co
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Todo().Category(rctx, obj)
+			return ec.resolvers.Todo().Categories(rctx, obj)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			forArg, err := ec.unmarshalNString2ᚕstringᚄ(ctx, []interface{}{"rest0", "cli"})
@@ -3130,7 +3145,7 @@ func (ec *executionContext) unmarshalInputUpdateTodoInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
-			it.Text, err = ec.unmarshalNString2string(ctx, v)
+			it.Text, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3138,7 +3153,7 @@ func (ec *executionContext) unmarshalInputUpdateTodoInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
-			it.UserID, err = ec.unmarshalNString2string(ctx, v)
+			it.UserID, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3399,7 +3414,7 @@ func (ec *executionContext) _Todo(ctx context.Context, sel ast.SelectionSet, obj
 				}
 				return res
 			})
-		case "category":
+		case "categories":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -3407,7 +3422,7 @@ func (ec *executionContext) _Todo(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Todo_category(ctx, field, obj)
+				res = ec._Todo_categories(ctx, field, obj)
 				return res
 			})
 		default:

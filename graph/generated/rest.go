@@ -19,100 +19,109 @@ func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 	// GraphQL Operation => Arguments <Name,Type>
 	restInputs := make(handlerx.RESTArgumentsMappingType)
 
-	// Query
-	{ // overlapping
-		restSelection["overlapping"] = "{twoFoo,oldFoo,new_foo}"
+	// Part 1/3: Query Objects
+	{
+		{ // overlapping
+			restSelection["overlapping"] = "{twoFoo,oldFoo,new_foo}"
 
-		methodArguments := make(handlerx.ArgNameArgTypePair)
-		restArguments["overlapping"] = methodArguments
-	}
-	{ // todo
-		r.Method("GET", prefix+"/api/v1/todo/{id}", srv)
+			methodArguments := make(handlerx.ArgNameArgTypePair)
+			restArguments["overlapping"] = methodArguments
+		}
+		{ // todo
+			r.Method("GET", prefix+"/api/v1/todo/{id}", srv)
 
-		restOperation["GET"+":"+prefix+"/api/v1/todo/{id}"] = "todo"
-		restSelection["todo"] = "{id,text,done,user{id,name},category{name}}"
+			restOperation["GET"+":"+prefix+"/api/v1/todo/{id}"] = "todo"
+			restSelection["todo"] = "{id,text,done,user{id,name},categories{name}}"
 
-		methodArguments := make(handlerx.ArgNameArgTypePair)
-		methodArguments["id"] = "ID!"
-		methodArguments["name"] = "String"
-		methodArguments["tmp"] = "Int"
-		restArguments["todo"] = methodArguments
-	}
-	{ // todos
-		r.Method("GET", prefix+"/api/v1/todos", srv)
+			methodArguments := make(handlerx.ArgNameArgTypePair)
+			methodArguments["id"] = "ID!"
+			methodArguments["name"] = "String"
+			methodArguments["tmp"] = "Int"
+			restArguments["todo"] = methodArguments
+		}
+		{ // todos
+			r.Method("GET", prefix+"/api/v1/todos", srv)
 
-		restOperation["GET"+":"+prefix+"/api/v1/todos"] = "todos"
-		restSelection["todos"] = "{id,text,done,user{id,name},category{name}}"
+			restOperation["GET"+":"+prefix+"/api/v1/todos"] = "todos"
+			restSelection["todos"] = "{id,text,done,user{id,name},categories{name}}"
 
-		methodArguments := make(handlerx.ArgNameArgTypePair)
-		methodArguments["ids"] = "[ID!]"
-		methodArguments["userId"] = "ID"
-		methodArguments["userId2"] = "ID!"
-		methodArguments["text"] = "String"
-		methodArguments["text2"] = "String!"
-		methodArguments["done"] = "Boolean"
-		methodArguments["done2"] = "Boolean!"
-		methodArguments["pageOffset"] = "Int"
-		methodArguments["pageSize"] = "Int"
-		restArguments["todos"] = methodArguments
-	}
+			methodArguments := make(handlerx.ArgNameArgTypePair)
+			methodArguments["ids"] = "[ID!]"
+			methodArguments["userId"] = "ID"
+			methodArguments["userId2"] = "ID!"
+			methodArguments["text"] = "String"
+			methodArguments["text2"] = "String!"
+			methodArguments["done"] = "Boolean"
+			methodArguments["done2"] = "Boolean!"
+			methodArguments["pageOffset"] = "Int"
+			methodArguments["pageSize"] = "Int"
+			restArguments["todos"] = methodArguments
+		}
 
-	// Mutation
-	{ // createTodo
-		r.Method("POST", prefix+"/api/v1/todo", srv)
-
-		restOperation["POST"+":"+prefix+"/api/v1/todo"] = "createTodo"
-		restSelection["createTodo"] = "{id,text,done,user{id,name},category{name}}"
-
-		methodArguments := make(handlerx.ArgNameArgTypePair)
-		methodArguments["input"] = "NewTodoInput!"
-		restArguments["createTodo"] = methodArguments
-	}
-	{ // updateTodo
-		r.Method("PUT", prefix+"/api/v1/todo/{id}", srv)
-
-		restOperation["PUT"+":"+prefix+"/api/v1/todo/{id}"] = "updateTodo"
-		restSelection["updateTodo"] = "{id,text,done,user{id,name},category{name}}"
-
-		methodArguments := make(handlerx.ArgNameArgTypePair)
-		methodArguments["input"] = "UpdateTodoInput!"
-		restArguments["updateTodo"] = methodArguments
-	}
-	{ // deleteTodo
-		r.Method("DELETE", prefix+"/api/v1/todo/{id}", srv)
-
-		restOperation["DELETE"+":"+prefix+"/api/v1/todo/{id}"] = "deleteTodo"
-		restSelection["deleteTodo"] = ""
-
-		methodArguments := make(handlerx.ArgNameArgTypePair)
-		methodArguments["id"] = "ID!"
-		restArguments["deleteTodo"] = methodArguments
-	}
-	{ // deleteTodoByUser
-		r.Method("DELETE", prefix+"/api/v1/todos", srv)
-
-		restOperation["DELETE"+":"+prefix+"/api/v1/todos"] = "deleteTodoByUser"
-		restSelection["deleteTodoByUser"] = ""
-
-		methodArguments := make(handlerx.ArgNameArgTypePair)
-		methodArguments["userID"] = "ID!"
-		restArguments["deleteTodoByUser"] = methodArguments
 	}
 
-	// Input
-	{ // NewTodoInput
-		inputArguments := make(handlerx.ArgNameArgTypePair)
-		inputArguments["text"] = "String!"
-		inputArguments["userID"] = "String!"
-		inputArguments["done"] = "Boolean"
-		restInputs["NewTodoInput"] = inputArguments
+	// Part 2/3: Mutation Objects
+	{
+		{ // createTodo
+			r.Method("POST", prefix+"/api/v1/todo", srv)
+
+			restOperation["POST"+":"+prefix+"/api/v1/todo"] = "createTodo"
+			restSelection["createTodo"] = "{id,text,done,user{id,name},categories{name}}"
+
+			methodArguments := make(handlerx.ArgNameArgTypePair)
+			methodArguments["input"] = "NewTodoInput!"
+			restArguments["createTodo"] = methodArguments
+		}
+		{ // updateTodo
+			r.Method("PUT", prefix+"/api/v1/todo/{id}", srv)
+
+			restOperation["PUT"+":"+prefix+"/api/v1/todo/{id}"] = "updateTodo"
+			restSelection["updateTodo"] = "{id,text,done,user{id,name},categories{name}}"
+
+			methodArguments := make(handlerx.ArgNameArgTypePair)
+			methodArguments["input"] = "UpdateTodoInput!"
+			restArguments["updateTodo"] = methodArguments
+		}
+		{ // deleteTodo
+			r.Method("DELETE", prefix+"/api/v1/todo/{id}", srv)
+
+			restOperation["DELETE"+":"+prefix+"/api/v1/todo/{id}"] = "deleteTodo"
+			restSelection["deleteTodo"] = ""
+
+			methodArguments := make(handlerx.ArgNameArgTypePair)
+			methodArguments["id"] = "ID!"
+			restArguments["deleteTodo"] = methodArguments
+		}
+		{ // deleteTodoByUser
+			r.Method("DELETE", prefix+"/api/v1/todos", srv)
+
+			restOperation["DELETE"+":"+prefix+"/api/v1/todos"] = "deleteTodoByUser"
+			restSelection["deleteTodoByUser"] = ""
+
+			methodArguments := make(handlerx.ArgNameArgTypePair)
+			methodArguments["userID"] = "ID!"
+			restArguments["deleteTodoByUser"] = methodArguments
+		}
+
 	}
-	{ // UpdateTodoInput
-		inputArguments := make(handlerx.ArgNameArgTypePair)
-		inputArguments["id"] = "ID!"
-		inputArguments["text"] = "String!"
-		inputArguments["userID"] = "String!"
-		restInputs["UpdateTodoInput"] = inputArguments
+
+	// Part 3/3: Input Objects
+	{
+		{ // NewTodoInput
+			inputArguments := make(handlerx.ArgNameArgTypePair)
+			inputArguments["text"] = "String!"
+			inputArguments["userID"] = "String!"
+			inputArguments["done"] = "Boolean"
+			restInputs["NewTodoInput"] = inputArguments
+		}
+		{ // UpdateTodoInput
+			inputArguments := make(handlerx.ArgNameArgTypePair)
+			inputArguments["id"] = "ID!"
+			inputArguments["text"] = "String"
+			inputArguments["userID"] = "String"
+			restInputs["UpdateTodoInput"] = inputArguments
+		}
+
 	}
 
 	handlerx.SetupHTTP2GraphQLMapping(restOperation, restSelection, restArguments, restInputs)

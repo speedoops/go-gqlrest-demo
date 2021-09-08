@@ -31,8 +31,12 @@ func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTod
 	list := r.todos
 	for _, l := range list {
 		if l.ID == input.ID {
-			l.Text = input.Text
-			l.UserID = input.UserID
+			if input.Text != nil {
+				l.Text = *input.Text
+			}
+			if input.UserID != nil {
+				l.UserID = *input.UserID
+			}
 			return l, nil
 		}
 	}
@@ -88,7 +92,7 @@ func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, 
 	return &model.User{ID: obj.UserID, Name: "user " + obj.UserID, Role: "test"}, nil
 }
 
-func (r *todoResolver) Category(ctx context.Context, obj *model.Todo) ([]*model.Category, error) {
+func (r *todoResolver) Categories(ctx context.Context, obj *model.Todo) ([]*model.Category, error) {
 	category := model.Category{ID: "1", Name: "Category"}
 	return []*model.Category{&category}, nil
 }

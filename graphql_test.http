@@ -14,11 +14,17 @@ POST http://localhost:8080/query HTTP/1.1
 content-type: application/json
 X-Request-Type: GraphQL
 
-mutation updateTodo {
-  updateTodo(input: {id: "T9527", userID:"uid", text:"9527.Updated"}){
+mutation updateTodo($id: ID!) {
+  updateTodo(input: {id:$id, userID:"uid", text:"9527.Updated"}){
     id,text,done
   }
 }
+
+{
+  "id": "T9527",
+  "id2": "T9527"
+}
+
 
 ### TODO 样例
 POST http://localhost:8080/query HTTP/1.1

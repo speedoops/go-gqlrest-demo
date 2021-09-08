@@ -6,5 +6,11 @@ schema {
 	mutation: Mutation
 }
 
-type Mutation 
-type Query 
+type Mutation
+type Query
+
+type User {
+	id: ID!
+	name: String!
+	role: String! @hide(for: ["rest", "cli"])
+}
