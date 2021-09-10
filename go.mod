@@ -3,7 +3,7 @@ module github.com/speedoops/go-gqlrest-demo
 go 1.14
 
 require (
-	github.com/99designs/gqlgen v0.13.1-0.20210729011107-9a214e80158b
+	github.com/99designs/gqlgen v0.14.0
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/go-chi/chi/v5 v5.0.4
 	github.com/google/gops v0.3.20

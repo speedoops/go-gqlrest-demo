@@ -413,8 +413,14 @@ schema {
 	mutation: Mutation
 }
 
-type Mutation 
-type Query 
+type Mutation
+type Query
+
+type User {
+	id: ID!
+	name: String!
+	role: String! @hide(for: ["rest", "cli"])
+}
 `, BuiltIn: false},
 	{Name: "graph/todo.graphqls", Input: `# GraphQL schema example
 #
@@ -423,23 +429,28 @@ type Query
 # https://github.com/99designs/gqlgen/issues/1579
 #directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
 
-type Todo {
-	id: ID!
+extend type Mutation {
+	createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todo")
+	updateTodo(input: UpdateTodoInput!): Todo!
+		@http(url: "/api/v1/todo/{id}", method: "PUT")
+	deleteTodo(id: ID!): Boolean!
+		@http(url: "/api/v1/todo/{id}", method: "DELETE")
+	deleteTodoByUser(userID: ID!): Boolean!
+		@http(url: "/api/v1/todos", method: "DELETE")
+		@hasRole(role: ADMIN)
+		@hide(for: ["rest"])
+}
+
+input NewTodoInput {
 	text: String!
-	done: Boolean! @deprecated(reason: "blah blah")
-	user: User!
-	categories: [Category!] @hide(for: ["rest0", "cli"])
+	userID: String!
+	done: Boolean
 }
 
-type User {
-	id: ID!
-	name: String!
-	role: String! @hide(for: ["rest", "cli"])
-}
-
-type Category {
-	id: ID! @hide(for: ["rest", "cli"])
-	name: String!
+input UpdateTodoInput {
+	id: ID! # https://www.apollographql.com/blog/graphql/basics/designing-graphql-mutations/
+	text: String
+	userID: String
 }
 
 extend type Query {
@@ -456,29 +467,16 @@ extend type Query {
 		pageSize: Int
 	): [Todo!]! @http(url: "/api/v1/todos")
 }
-
-input NewTodoInput {
+type Todo {
+	id: ID!
 	text: String!
-	userID: String!
-	done: Boolean
+	done: Boolean! @deprecated(reason: "blah blah")
+	user: User!
+	categories: [Category!] @hide(for: ["rest0", "cli"])
 }
-
-input UpdateTodoInput {
-	id: ID! # https://www.apollographql.com/blog/graphql/basics/designing-graphql-mutations/
-	text: String
-	userID: String
-}
-
-extend type Mutation {
-	createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todo")
-	updateTodo(input: UpdateTodoInput!): Todo!
-		@http(url: "/api/v1/todo/{id}", method: "PUT")
-	deleteTodo(id: ID!): Boolean!
-		@http(url: "/api/v1/todo/{id}", method: "DELETE")
-	deleteTodoByUser(userID: ID!): Boolean!
-		@http(url: "/api/v1/todos", method: "DELETE")
-		@hasRole(role: ADMIN)
-		@hide(for: ["rest"])
+type Category {
+	id: ID! @hide(for: ["rest", "cli"])
+	name: String!
 }
 `, BuiltIn: false},
 }
