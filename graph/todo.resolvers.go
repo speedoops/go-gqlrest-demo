@@ -27,6 +27,17 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodoIn
 	return todo, nil
 }
 
+func (r *mutationResolver) CompleteTodo(ctx context.Context, id string) (*model.Todo, error) {
+	list := r.todos
+	for _, l := range list {
+		if l.ID == id {
+			l.Done = true
+			return l, nil
+		}
+	}
+	return nil, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", id))
+}
+
 func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.Todo, error) {
 	list := r.todos
 	for _, l := range list {
@@ -84,7 +95,7 @@ func (r *queryResolver) Todo(ctx context.Context, id string, name *string, tmp *
 	return nil, errorsx.NewNotFoundError(errors.New("not found"))
 }
 
-func (r *queryResolver) Todos(ctx context.Context, ids []string, userID *string, userID2 string, text *string, text2 string, done *bool, done2 bool, pageOffset *int, pageSize *int) ([]*model.Todo, error) {
+func (r *queryResolver) Todos(ctx context.Context, ids []string, userID *string, userID2 *string, text *string, text2 *string, done *bool, done2 bool, pageOffset *int, pageSize *int) ([]*model.Todo, error) {
 	return r.todos, nil
 }
 

@@ -5,3 +5,4 @@
 hack/doc/*
 workspace.code-workspace
 hack/tmp/*
+*test.profile

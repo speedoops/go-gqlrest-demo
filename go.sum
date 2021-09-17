@@ -242,8 +242,8 @@ github.com/smartystreets/goconvey v1.6.4 h1:fv0U8FUIMPNf1L9lnHLvLhgicrIVChEkdzIK
 github.com/smartystreets/goconvey v1.6.4/go.mod h1:syvi0/a8iFYH4r/RixwvyeAJjdLS9QV7WQ/tjFTllLA=
 github.com/spaolacci/murmur3 v1.1.0 h1:7c1g84S4BPRrfL5Xrdp6fOJ206sU9y293DDHaoy0bLI=
 github.com/spaolacci/murmur3 v1.1.0/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
-github.com/speedoops/go-gqlrest v0.0.14 h1:TsMC91eeXASg6jEriNAUwdJB9CyuYn5EeaKNtxZUo8I=
-github.com/speedoops/go-gqlrest v0.0.14/go.mod h1:JAemHpq5HW13DZ9QxYDJecBP7tHjDHRoF6jE2hbCuPY=
+github.com/speedoops/go-gqlrest v0.0.16 h1:EPEiELZUMZsXqncb68Zswc9qBCp9+EnocmE58oyMTUw=
+github.com/speedoops/go-gqlrest v0.0.16/go.mod h1:JAemHpq5HW13DZ9QxYDJecBP7tHjDHRoF6jE2hbCuPY=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.1/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=

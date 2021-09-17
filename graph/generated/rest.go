@@ -48,9 +48,9 @@ func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 			methodArguments := make(handlerx.ArgNameArgTypePair)
 			methodArguments["ids"] = "[ID!]"
 			methodArguments["userId"] = "ID"
-			methodArguments["userId2"] = "ID!"
+			methodArguments["userId2"] = "ID"
 			methodArguments["text"] = "String"
-			methodArguments["text2"] = "String!"
+			methodArguments["text2"] = "String"
 			methodArguments["done"] = "Boolean"
 			methodArguments["done2"] = "Boolean!"
 			methodArguments["pageOffset"] = "Int"
@@ -71,6 +71,16 @@ func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 			methodArguments := make(handlerx.ArgNameArgTypePair)
 			methodArguments["input"] = "NewTodoInput!"
 			restArguments["createTodo"] = methodArguments
+		}
+		{ // completeTodo
+			r.Method("POST", prefix+"/api/v1/todo/{id}/complete", srv)
+
+			restOperation["POST"+":"+prefix+"/api/v1/todo/{id}/complete"] = "completeTodo"
+			restSelection["completeTodo"] = "{id,text,done,user{id,name},categories{name}}"
+
+			methodArguments := make(handlerx.ArgNameArgTypePair)
+			methodArguments["id"] = "ID!"
+			restArguments["completeTodo"] = methodArguments
 		}
 		{ // updateTodo
 			r.Method("PUT", prefix+"/api/v1/todo/{id}", srv)

@@ -15,6 +15,16 @@ import (
 	"github.com/tal-tech/go-zero/core/logx"
 )
 
+var _server http.Handler
+
+func GetMockServer(resolver generated.ResolverRoot) http.Handler {
+	if _server != nil {
+		return _server
+	}
+
+	return NewMockServer(resolver)
+}
+
 func NewMockServer(resolver generated.ResolverRoot) http.Handler {
 	// 1. 初始化服务端配置
 	var c config.Config

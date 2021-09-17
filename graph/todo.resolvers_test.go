@@ -28,7 +28,7 @@ func TestTodo(t *testing.T) {
 
 	t.Run("mutation.createTodo", func(t *testing.T) {
 		var resp struct {
-			CreateTodo Todo `json:"createTodo"`
+			Todo Todo `json:"createTodo"`
 		}
 
 		mutation := `
@@ -47,13 +47,31 @@ func TestTodo(t *testing.T) {
 		c.MustPost(mutation, &resp, gqlcli.Var("text", genRandomText()))
 		c.MustPost(mutation, &resp, gqlcli.Var("text", genRandomText()))
 
-		require.NotEmpty(t, resp.CreateTodo)
-		t.Logf("%+v", resp.CreateTodo)
+		require.NotEmpty(t, resp.Todo)
+		t.Logf("%+v", resp.Todo)
+	})
+
+	t.Run("mutation.completeTodo", func(t *testing.T) {
+		var resp struct {
+			Todo Todo `json:"completeTodo"`
+		}
+
+		mutation := `
+		mutation completeTodo($id: ID!) {
+			completeTodo(id: $id){
+			  id,text,done
+			}
+		  }
+		`
+		c.MustPost(mutation, &resp, gqlcli.Var("id", T9527))
+
+		require.NotEmpty(t, resp.Todo)
+		t.Logf("%+v", resp.Todo)
 	})
 
 	t.Run("mutation.updateTodo", func(t *testing.T) {
 		var resp struct {
-			UpdateTodo Todo `json:"updateTodo"`
+			Todo Todo `json:"updateTodo"`
 		}
 
 		mutation := `
@@ -65,8 +83,8 @@ func TestTodo(t *testing.T) {
 		`
 		c.MustPost(mutation, &resp, gqlcli.Var("id", T9527))
 
-		require.NotEmpty(t, resp.UpdateTodo)
-		t.Logf("%+v", resp.UpdateTodo)
+		require.NotEmpty(t, resp.Todo)
+		t.Logf("%+v", resp.Todo)
 	})
 
 	t.Run("query.todos should contain T9527", func(t *testing.T) {
@@ -94,7 +112,7 @@ func TestTodo(t *testing.T) {
 
 	t.Run("mutation.deleteTodo", func(t *testing.T) {
 		var resp struct {
-			DeleteTodo bool `json:"deleteTodo"`
+			Result bool `json:"deleteTodo"`
 		}
 
 		mutation := `
@@ -104,8 +122,8 @@ func TestTodo(t *testing.T) {
 		`
 		c.MustPost(mutation, &resp, gqlcli.Var("id", T9527))
 
-		require.NotEmpty(t, resp.DeleteTodo)
-		t.Logf("%+v", resp.DeleteTodo)
+		require.NotEmpty(t, resp.Result)
+		t.Logf("%+v", resp.Result)
 	})
 
 	t.Run("query.todos should not contain T9527", func(t *testing.T) {
@@ -142,6 +160,20 @@ func TestTodos_REST(t *testing.T) {
 
 		payload := `{"input": {"userID":"uid", "text":"$text"}}`
 		err := c.Post("/api/v1/todo", &resp, restcli.Body(payload))
+		require.Nil(t, err)
+		require.NotEmpty(t, resp.Data)
+
+		t.Logf("%+v", resp.Data)
+	})
+
+	t.Run("rest.completeTodo", func(t *testing.T) {
+		var resp struct {
+			Code    int
+			Message string
+			Data    Todo
+		}
+
+		err := c.Post("/api/v1/todo/T9527/complete", &resp)
 		require.Nil(t, err)
 		require.NotEmpty(t, resp.Data)
 

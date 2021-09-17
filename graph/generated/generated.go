@@ -56,6 +56,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		CompleteTodo     func(childComplexity int, id string) int
 		CreateTodo       func(childComplexity int, input model.NewTodoInput) int
 		DeleteTodo       func(childComplexity int, id string) int
 		DeleteTodoByUser func(childComplexity int, userID string) int
@@ -71,7 +72,7 @@ type ComplexityRoot struct {
 	Query struct {
 		Overlapping func(childComplexity int) int
 		Todo        func(childComplexity int, id string, name *string, tmp *int) int
-		Todos       func(childComplexity int, ids []string, userID *string, userID2 string, text *string, text2 string, done *bool, done2 bool, pageOffset *int, pageSize *int) int
+		Todos       func(childComplexity int, ids []string, userID *string, userID2 *string, text *string, text2 *string, done *bool, done2 bool, pageOffset *int, pageSize *int) int
 	}
 
 	Todo struct {
@@ -91,6 +92,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateTodo(ctx context.Context, input model.NewTodoInput) (*model.Todo, error)
+	CompleteTodo(ctx context.Context, id string) (*model.Todo, error)
 	UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.Todo, error)
 	DeleteTodo(ctx context.Context, id string) (bool, error)
 	DeleteTodoByUser(ctx context.Context, userID string) (bool, error)
@@ -101,7 +103,7 @@ type OverlappingFieldsResolver interface {
 type QueryResolver interface {
 	Overlapping(ctx context.Context) (*model.OverlappingFields, error)
 	Todo(ctx context.Context, id string, name *string, tmp *int) (*model.Todo, error)
-	Todos(ctx context.Context, ids []string, userID *string, userID2 string, text *string, text2 string, done *bool, done2 bool, pageOffset *int, pageSize *int) ([]*model.Todo, error)
+	Todos(ctx context.Context, ids []string, userID *string, userID2 *string, text *string, text2 *string, done *bool, done2 bool, pageOffset *int, pageSize *int) ([]*model.Todo, error)
 }
 type TodoResolver interface {
 	User(ctx context.Context, obj *model.Todo) (*model.User, error)
@@ -136,6 +138,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Category.Name(childComplexity), true
+
+	case "Mutation.completeTodo":
+		if e.complexity.Mutation.CompleteTodo == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_completeTodo_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CompleteTodo(childComplexity, args["id"].(string)), true
 
 	case "Mutation.createTodo":
 		if e.complexity.Mutation.CreateTodo == nil {
@@ -235,7 +249,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Todos(childComplexity, args["ids"].([]string), args["userId"].(*string), args["userId2"].(string), args["text"].(*string), args["text2"].(string), args["done"].(*bool), args["done2"].(bool), args["pageOffset"].(*int), args["pageSize"].(*int)), true
+		return e.complexity.Query.Todos(childComplexity, args["ids"].([]string), args["userId"].(*string), args["userId2"].(*string), args["text"].(*string), args["text2"].(*string), args["done"].(*bool), args["done2"].(bool), args["pageOffset"].(*int), args["pageSize"].(*int)), true
 
 	case "Todo.categories":
 		if e.complexity.Todo.Categories == nil {
@@ -382,26 +396,26 @@ enum Role {
     USER
 }`, BuiltIn: false},
 	{Name: "graph/extend.graphqls", Input: `#directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
-directive @goModel(model: String, models: [String!]) on OBJECT
-    | INPUT_OBJECT
-    | SCALAR
-    | ENUM
-    | INTERFACE
-    | UNION
+directive @goModel(
+  model: String
+  models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 
 #directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
-directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
-    | FIELD_DEFINITION
+directive @goField(
+  forceResolver: Boolean
+  name: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 extend type Query {
-    overlapping: OverlappingFields 
+  overlapping: OverlappingFields
 }
 
 type OverlappingFields {
-  oneFoo: Int! @goField(name: "foo") @hide(for:["rest", "default"])
-  twoFoo: Int! @goField(name: "foo") 
+  oneFoo: Int! @goField(name: "foo") @hide(for: ["rest", "default"])
+  twoFoo: Int! @goField(name: "foo")
   oldFoo: Int! @goField(name: "foo", forceResolver: true)
-  newFoo: Int! @hide(for:["rest", "default"])
+  newFoo: Int! @hide(for: ["rest", "default"])
   new_foo: Int!
 }
 `, BuiltIn: false},
@@ -430,55 +444,66 @@ type User {
 #directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
 
 extend type Mutation {
-	createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todo")
-	updateTodo(input: UpdateTodoInput!): Todo!
-		@http(url: "/api/v1/todo/{id}", method: "PUT")
-	deleteTodo(id: ID!): Boolean!
-		@http(url: "/api/v1/todo/{id}", method: "DELETE")
-	deleteTodoByUser(userID: ID!): Boolean!
-		@http(url: "/api/v1/todos", method: "DELETE")
-		@hasRole(role: ADMIN)
-		@hide(for: ["rest"])
+  createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todo")
+  completeTodo(id: ID!): Todo! @http(url: "/api/v1/todo/{id}/complete")
+  updateTodo(input: UpdateTodoInput!): Todo!
+    @http(url: "/api/v1/todo/{id}", method: "PUT")
+  deleteTodo(id: ID!): Boolean!
+    @http(url: "/api/v1/todo/{id}", method: "DELETE")
+  deleteTodoByUser(userID: ID!): Boolean!
+    @http(url: "/api/v1/todos", method: "DELETE")
+    @hasRole(role: ADMIN)
+    @hide(for: ["rest"])
 }
 
 input NewTodoInput {
-	text: String!
-	userID: String!
-	done: Boolean
+  text: String!
+  userID: String!
+  done: Boolean
 }
 
 input UpdateTodoInput {
-	id: ID! # https://www.apollographql.com/blog/graphql/basics/designing-graphql-mutations/
-	text: String
-	userID: String
+  id: ID! # https://www.apollographql.com/blog/graphql/basics/designing-graphql-mutations/
+  text: String
+  userID: String
 }
 
 extend type Query {
-	todo(id: ID!, name: String, tmp: Int): Todo! @http(url: "/api/v1/todo/{id}")
-	todos(
-		ids: [ID!]
-		userId: ID
-		userId2: ID!
-		text: String
-		text2: String!
-		done: Boolean
-		done2: Boolean!
-		pageOffset: Int
-		pageSize: Int
-	): [Todo!]! @http(url: "/api/v1/todos")
+  todo(id: ID!, name: String, tmp: Int): Todo! @http(url: "/api/v1/todo/{id}")
+  todos(
+    ids: [ID!]
+    userId: ID
+    userId2: ID
+    text: String
+    text2: String
+    done: Boolean
+    done2: Boolean!
+    pageOffset: Int
+    pageSize: Int
+  ): [Todo!]! @http(url: "/api/v1/todos")
 }
 type Todo {
-	id: ID!
-	text: String!
-	done: Boolean! @deprecated(reason: "blah blah")
-	user: User!
-	categories: [Category!] @hide(for: ["rest0", "cli"])
+  id: ID!
+  text: String!
+  done: Boolean! @deprecated(reason: "blah blah")
+  user: User!
+  categories: [Category!] @hide(for: ["rest0", "cli"])
 }
 type Category {
-	id: ID! @hide(for: ["rest", "cli"])
-	name: String!
+  id: ID! @hide(for: ["rest", "cli"])
+  name: String!
 }
 `, BuiltIn: false},
+	{Name: "federation/directives.graphql", Input: `
+scalar _Any
+scalar _FieldSet
+
+directive @external on FIELD_DEFINITION
+directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
+directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
+directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
+directive @extends on OBJECT
+`, BuiltIn: true},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -552,6 +577,21 @@ func (ec *executionContext) dir_preview_args(ctx context.Context, rawArgs map[st
 		}
 	}
 	args["toggledBy"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_completeTodo_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -684,10 +724,10 @@ func (ec *executionContext) field_Query_todos_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["userId"] = arg1
-	var arg2 string
+	var arg2 *string
 	if tmp, ok := rawArgs["userId2"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId2"))
-		arg2, err = ec.unmarshalNID2string(ctx, tmp)
+		arg2, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -702,10 +742,10 @@ func (ec *executionContext) field_Query_todos_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["text"] = arg3
-	var arg4 string
+	var arg4 *string
 	if tmp, ok := rawArgs["text2"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text2"))
-		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		arg4, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -912,6 +952,72 @@ func (ec *executionContext) _Mutation_createTodo(ctx context.Context, field grap
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todo")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.Http == nil {
+				return nil, errors.New("directive http is not implemented")
+			}
+			return ec.directives.Http(ctx, nil, directive0, url, nil)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Todo); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/speedoops/go-gqlrest-demo/graph/model.Todo`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Todo)
+	fc.Result = res
+	return ec.marshalNTodo2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlrestᚑdemoᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_completeTodo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_completeTodo_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CompleteTodo(rctx, args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todo/{id}/complete")
 			if err != nil {
 				return nil, err
 			}
@@ -1525,7 +1631,7 @@ func (ec *executionContext) _Query_todos(ctx context.Context, field graphql.Coll
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Todos(rctx, args["ids"].([]string), args["userId"].(*string), args["userId2"].(string), args["text"].(*string), args["text2"].(string), args["done"].(*bool), args["done2"].(bool), args["pageOffset"].(*int), args["pageSize"].(*int))
+			return ec.resolvers.Query().Todos(rctx, args["ids"].([]string), args["userId"].(*string), args["userId2"].(*string), args["text"].(*string), args["text2"].(*string), args["done"].(*bool), args["done2"].(bool), args["pageOffset"].(*int), args["pageSize"].(*int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todos")
@@ -3221,6 +3327,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "completeTodo":
+			out.Values[i] = ec._Mutation_completeTodo(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "updateTodo":
 			out.Values[i] = ec._Mutation_updateTodo(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -3917,6 +4028,21 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋspeedoopsᚋgoᚑgqlr
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalN_FieldSet2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalN_FieldSet2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

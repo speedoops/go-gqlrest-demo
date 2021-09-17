@@ -11,11 +11,11 @@ require (
 	github.com/kataras/i18n v0.0.6
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
-	github.com/speedoops/go-gqlrest v0.0.14
+	github.com/speedoops/go-gqlrest v0.0.16
 	github.com/stretchr/testify v1.7.0
 	github.com/tal-tech/go-zero v1.1.10
 	github.com/vektah/gqlparser/v2 v2.2.0
 )
 
 // replace github.com/99designs/gqlgen => ../gqlgen
-//replace github.com/speedoops/go-gqlrest => ../go-gqlrest
+// replace github.com/speedoops/go-gqlrest => ../go-gqlrest
