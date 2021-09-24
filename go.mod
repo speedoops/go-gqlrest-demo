@@ -18,4 +18,4 @@ require (
 )
 
 // replace github.com/99designs/gqlgen => ../gqlgen
-// replace github.com/speedoops/go-gqlrest => ../go-gqlrest
+replace github.com/speedoops/go-gqlrest => ../go-gqlrest

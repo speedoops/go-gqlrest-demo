@@ -11,7 +11,6 @@ import (
 	"github.com/speedoops/go-gqlrest-demo/graph"
 	"github.com/speedoops/go-gqlrest-demo/graph/engine"
 	"github.com/speedoops/go-gqlrest-demo/graph/generated"
-	"github.com/speedoops/go-gqlrest/handlerx"
 	"github.com/tal-tech/go-zero/core/logx"
 )
 
@@ -39,7 +38,7 @@ func main() {
 	mux.Handle("/query", srv)
 	mux.Handle("/graphql", srv)
 	generated.RegisterHandlers(mux, srv, "")
-	handlerx.RegisterPrinter(&LogPrinter{})
+	//handlerx.RegisterPrinter(&LogPrinter{})
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, mux))

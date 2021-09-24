@@ -96,7 +96,24 @@ func (r *queryResolver) Todo(ctx context.Context, id string, name *string, tmp *
 }
 
 func (r *queryResolver) Todos(ctx context.Context, ids []string, userID *string, userID2 *string, text *string, text2 *string, done *bool, done2 bool, pageOffset *int, pageSize *int) ([]*model.Todo, error) {
-	return r.todos, nil
+	list := r.todos
+	if len(ids) > 0 {
+		idmap := make(map[string]int)
+		for i, v := range ids {
+			idmap[v] = i
+		}
+
+		n := 0
+		for _, l := range list {
+			if _, ok := idmap[l.ID]; ok {
+				list[n] = l
+				n++
+			}
+		}
+
+		list = list[:n]
+	}
+	return list, nil
 }
 
 func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {

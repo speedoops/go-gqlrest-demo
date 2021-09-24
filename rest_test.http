@@ -3,7 +3,10 @@
 ###############################
 
 ###
-GET http://localhost:8080/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true
+GET http://localhost:8080/api/v1/todos?userId2=userId2&text2=text2&done2=true
+
+###
+GET http://localhost:8080/api/v1/todos?ids=T9527&ids=T3916589616287113937&userId2=userId2&text2=text2&done2=true
 
 ###
 POST http://localhost:8080/api/v1/todo
@@ -12,7 +15,7 @@ content-type: application/json
 {"input": {"userID":"uid", "text":"$text"}}
 
 ###
-PUT http://localhost:8080/api/v1/todo/T95270
+PUT http://localhost:8080/api/v1/todo/T9527
 content-type: application/json
 
 {"input": {"userID":"uid", "text":"$text.Updated"}}
