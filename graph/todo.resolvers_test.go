@@ -132,7 +132,7 @@ func TestTodo(t *testing.T) {
 		}
 		query := `
 		query todos {
-			todos(ids:["T9527"],userId2:"userID2",text2:"text2",done2:true) {
+			todos(userId2:"userID2",text2:"text2",done2:true) {
 				id,text,done
 			}
 		}
@@ -159,7 +159,9 @@ func TestTodos_REST(t *testing.T) {
 		}
 
 		payload := `{"input": {"userID":"uid", "text":"$text"}}`
-		err := c.Post("/api/v1/todo", &resp, restcli.Body(payload))
+		err := c.Post("/api/v1/todos", &resp, restcli.Body(payload))
+		_ = c.Post("/api/v1/todos", &resp, restcli.Body(payload))
+		_ = c.Post("/api/v1/todos", &resp, restcli.Body(payload))
 		require.Nil(t, err)
 		require.NotEmpty(t, resp.Data)
 
@@ -207,7 +209,7 @@ func TestTodos_REST(t *testing.T) {
 			Data    []Todo
 		}
 
-		err := c.Get("/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true", &resp)
+		err := c.Get("/api/v1/todos?ids=T9527,T666&userId2=userId2&text2=text2&done2=true", &resp)
 		require.Nil(t, err)
 
 		for _, v := range resp.Data {
@@ -233,7 +235,7 @@ func TestTodos_POST(t *testing.T) {
 		payload := `{"userID":"uid", "text":"$text"}` // 方式1
 		//payload = fmt.Sprintf(`{"input": %s}`, payload) // 方式2
 
-		err := c.Post("/api/v1/todo", &resp, restcli.Body(payload))
+		err := c.Post("/api/v1/todos", &resp, restcli.Body(payload))
 		require.Nil(t, err)
 		require.NotEmpty(t, resp.Data)
 

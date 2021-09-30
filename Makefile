@@ -18,12 +18,13 @@ run:
 	go run main.go
 
 test:
-	go test -timeout 30s -run ^TestTodo ./... -v -coverprofile=test.profile
-	go tool cover -func=test.profile | tail -n 1 | awk '{print "Total coverage: " $$3 " of statements"}'
+	go test -timeout 30s -run ^TestTodo ./... -v -coverprofile=coverage.out
+	go tool cover -func=coverage.out | tail -n 1 | awk '{print "Total coverage: " $$3 " of statements"}'
+	go tool cover -html=coverage.out -o coverage.html
 
 smoke:
-	go test -gcflags=all=-l -timeout 30s ./... -short -v -coverprofile=test.profile
-	go tool cover -func=test.profile | tail -n 1 | awk '{print "Total coverage: " $$3 " of statements"}'
+	go test -gcflags=all=-l -timeout 30s ./... -short -v -coverprofile=coverage.out
+	go tool cover -func=coverage.out | tail -n 1 | awk '{print "Total coverage: " $$3 " of statements"}'
 
 lint:
 	golangci-lint run --timeout=5m

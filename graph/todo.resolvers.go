@@ -38,6 +38,10 @@ func (r *mutationResolver) CompleteTodo(ctx context.Context, id string) (*model.
 	return nil, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", id))
 }
 
+func (r *mutationResolver) CompleteTodos(ctx context.Context, ids []string) ([]*model.Todo, error) {
+	return nil, nil
+}
+
 func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.Todo, error) {
 	list := r.todos
 	for _, l := range list {

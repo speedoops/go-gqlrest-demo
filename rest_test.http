@@ -6,10 +6,10 @@
 GET http://localhost:8080/api/v1/todos?userId2=userId2&text2=text2&done2=true
 
 ###
-GET http://localhost:8080/api/v1/todos?ids=T9527&ids=T3916589616287113937&userId2=userId2&text2=text2&done2=true
+GET http://localhost:8080/api/v1/todos?ids=T9527&ids=T3916 589616287113937&userId2=1,2,33&text2=text2&done2=true&done2=false
 
 ###
-POST http://localhost:8080/api/v1/todo
+POST http://localhost:8080/api/v1/todos
 content-type: application/json
 
 {"input": {"userID":"uid", "text":"$text"}}
@@ -32,7 +32,7 @@ GET http://localhost:8080/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&don
 ###############################
 
 ###
-POST http://localhost:8080/api/v1/todo HTTP/1.1
+POST http://localhost:8080/api/v1/todos HTTP/1.1
 content-type: application/json
 
 {
@@ -42,7 +42,25 @@ content-type: application/json
 }
 
 ###
-# PUT http://localhost:8080/api/v1/todo/T9527?verbose=true&lang=zh-CN HTTP/1.1
+POST http://localhost:8080/api/v1/todo/{id}/complete HTTP/1.1
+content-type: application/json
+
+{
+    "userID":"uid",
+    "text":"text",
+    "done": false
+}
+
+###
+POST http://localhost:8080/api/v1/todos/batchcomplete HTTP/1.1
+content-type: application/json
+
+{
+    "ids":["T9527","xx"]
+}
+
+###
+# PUT http://localhost:8080/api/v1/todos/T9527?verbose=true&lang=zh-CN HTTP/1.1
 PUT http://localhost:8080/api/v1/todo/T9527
 content-type: application/json
 

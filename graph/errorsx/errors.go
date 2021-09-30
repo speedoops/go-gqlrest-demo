@@ -7,7 +7,6 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -148,7 +147,11 @@ func NewNotFoundError(err error) error {
 // ========================================================
 
 func AppErrorPresenter(ctx context.Context, e error) *gqlerror.Error {
-	err := graphql.DefaultErrorPresenter(ctx, e)
+	err := &gqlerror.Error{}
+
+	if gqlErr, ok := e.(*gqlerror.Error); ok {
+		e = gqlErr.Unwrap()
+	}
 
 	var appErr AppError
 	if errors.As(e, &appErr) {
@@ -157,7 +160,7 @@ func AppErrorPresenter(ctx context.Context, e error) *gqlerror.Error {
 		return err
 	}
 
-	err.Message = fmt.Sprintf("APIGW.InternalError: %s", err.Message)
+	err.Message = fmt.Sprintf("APIGW.InternalError: %s\n %#v", err.Message, e)
 	errcode.Set(err, "500")
 	return err
 }

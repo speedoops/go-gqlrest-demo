@@ -11,7 +11,7 @@ import (
 	"github.com/speedoops/go-gqlrest-demo/graph"
 	"github.com/speedoops/go-gqlrest-demo/graph/engine"
 	"github.com/speedoops/go-gqlrest-demo/graph/generated"
-	"github.com/tal-tech/go-zero/core/logx"
+	"github.com/speedoops/go-gqlrest/handlerx"
 )
 
 const defaultPort = "8080"
@@ -38,8 +38,10 @@ func main() {
 	mux.Handle("/query", srv)
 	mux.Handle("/graphql", srv)
 	generated.RegisterHandlers(mux, srv, "")
-	//handlerx.RegisterPrinter(&LogPrinter{})
+	handlerx.RegisterPrinter(&LogPrinter{})
 
+	_ = mux.ServeHTTP // 调试入口1：HTTP Server Entry
+	_ = srv.ServeHTTP // 调试入口2：GraphQL Handler Entry
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
@@ -47,8 +49,8 @@ func main() {
 type LogPrinter struct{}
 
 func (l *LogPrinter) Printf(format string, v ...interface{}) {
-	logx.Infof(format, v...)
+	log.Printf(format, v...)
 }
 func (l *LogPrinter) Println(v ...interface{}) {
-	logx.Info(v...)
+	log.Println(v...)
 }

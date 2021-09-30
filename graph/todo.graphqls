@@ -6,8 +6,9 @@
 #directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
 
 extend type Mutation {
-  createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todo")
+  createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todos")
   completeTodo(id: ID!): Todo! @http(url: "/api/v1/todo/{id}/complete")
+  completeTodos(ids: [ID!]): [Todo!] @http(url: "/api/v1/todos/batchcomplete")
   updateTodo(input: UpdateTodoInput!): Todo!
     @http(url: "/api/v1/todo/{id}", method: "PUT")
   deleteTodo(id: ID!): Boolean!
@@ -31,7 +32,7 @@ input UpdateTodoInput {
 }
 
 extend type Query {
-  todo(id: ID!, name: String, tmp: Int): Todo! @http(url: "/api/v1/todo/{id}")
+  todo(id: ID!, name: String, tmp: Int): Todo! @http(url: "/api/v1/todos/{id}")
   todos(
     ids: [ID!]
     userId: ID
@@ -48,7 +49,7 @@ type Todo {
   id: ID!
   text: String!
   done: Boolean! @deprecated(reason: "blah blah")
-  user: User!
+  user: User! @hide(for: ["rest", "cli"])
   categories: [Category!] @hide(for: ["rest0", "cli"])
 }
 type Category {
