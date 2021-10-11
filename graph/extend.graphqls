@@ -21,3 +21,8 @@ type OverlappingFields {
   newFoo: Int! @hide(for: ["rest", "default"])
   new_foo: Int!
 }
+
+enum EnumType {
+  A
+  B
+}

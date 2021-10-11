@@ -8,7 +8,7 @@
 extend type Mutation {
   createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todos")
   completeTodo(id: ID!): Todo! @http(url: "/api/v1/todo/{id}/complete")
-  completeTodos(ids: [ID!]): [Todo!] @http(url: "/api/v1/todos/batchcomplete")
+  completeTodos(ids: [ID!]): [Todo!] @http(url: "/api/v1/todos/bulk-complete")
   updateTodo(input: UpdateTodoInput!): Todo!
     @http(url: "/api/v1/todo/{id}", method: "PUT")
   deleteTodo(id: ID!): Boolean!

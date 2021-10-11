@@ -31,6 +31,47 @@ type User struct {
 	Role string `json:"role"`
 }
 
+type EnumType string
+
+const (
+	EnumTypeA EnumType = "A"
+	EnumTypeB EnumType = "B"
+)
+
+var AllEnumType = []EnumType{
+	EnumTypeA,
+	EnumTypeB,
+}
+
+func (e EnumType) IsValid() bool {
+	switch e {
+	case EnumTypeA, EnumTypeB:
+		return true
+	}
+	return false
+}
+
+func (e EnumType) String() string {
+	return string(e)
+}
+
+func (e *EnumType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = EnumType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid EnumType", str)
+	}
+	return nil
+}
+
+func (e EnumType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type Role string
 
 const (

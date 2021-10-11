@@ -432,6 +432,11 @@ type OverlappingFields {
   newFoo: Int! @hide(for: ["rest", "default"])
   new_foo: Int!
 }
+
+enum EnumType {
+  A
+  B
+}
 `, BuiltIn: false},
 	{Name: "graph/schema.graphqls", Input: `# GraphQL图入口定义
 # https://graphql-rules.com/
@@ -460,7 +465,7 @@ type User {
 extend type Mutation {
   createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todos")
   completeTodo(id: ID!): Todo! @http(url: "/api/v1/todo/{id}/complete")
-  completeTodos(ids: [ID!]): [Todo!] @http(url: "/api/v1/todos/batchcomplete")
+  completeTodos(ids: [ID!]): [Todo!] @http(url: "/api/v1/todos/bulk-complete")
   updateTodo(input: UpdateTodoInput!): Todo!
     @http(url: "/api/v1/todo/{id}", method: "PUT")
   deleteTodo(id: ID!): Boolean!
@@ -1113,7 +1118,7 @@ func (ec *executionContext) _Mutation_completeTodos(ctx context.Context, field g
 			return ec.resolvers.Mutation().CompleteTodos(rctx, args["ids"].([]string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todos/batchcomplete")
+			url, err := ec.unmarshalNString2string(ctx, "/api/v1/todos/bulk-complete")
 			if err != nil {
 				return nil, err
 			}

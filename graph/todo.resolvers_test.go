@@ -147,6 +147,15 @@ func TestTodo(t *testing.T) {
 	})
 }
 
+func FoundT9527(data []Todo) bool {
+	for _, v := range data {
+		if v.ID == T9527 {
+			return true
+		}
+	}
+	return false
+}
+
 func TestTodos_REST(t *testing.T) {
 	s := engine.NewMockServer(&Resolver{})
 	c := restcli.New(s, restcli.Prefix(""))
@@ -182,6 +191,20 @@ func TestTodos_REST(t *testing.T) {
 		t.Logf("%+v", resp.Data)
 	})
 
+	t.Run("rest.completeTodos", func(t *testing.T) {
+		var resp struct {
+			Code    int
+			Message string
+			Data    Todo
+		}
+
+		payload := `{"ids": ["uid", "text"]}`
+		err := c.Post("/api/v1/todos/bulk-complete", &resp, restcli.Body(payload))
+		require.Nil(t, err)
+
+		t.Logf("%+v", resp.Data)
+	})
+
 	t.Run("rest.updateTodo", func(t *testing.T) {
 		var resp struct {
 			Code    int
@@ -197,12 +220,34 @@ func TestTodos_REST(t *testing.T) {
 		t.Logf("%+v", resp.Data)
 	})
 
+	t.Run("rest.todos: filter by ids", func(t *testing.T) {
+		var resp struct {
+			Code    int
+			Message string
+			Data    []Todo
+		}
+
+		err := c.Get("/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true", &resp)
+		require.Nil(t, err)
+		if !FoundT9527(resp.Data) {
+			t.Fail()
+		}
+		t.Logf("%+v", resp.Data)
+
+		err = c.Get("/api/v1/todos?ids=FakeID111,FakeID222&userId2=userId2&text2=text2&done2=true", &resp)
+		require.Nil(t, err)
+		if FoundT9527(resp.Data) {
+			t.Fail()
+		}
+		t.Logf("%+v", resp.Data)
+	})
+
 	t.Run("rest.deleteTodo", func(t *testing.T) {
 		err := c.Delete("/api/v1/todo/T9527", nil)
 		require.Nil(t, err)
 	})
 
-	t.Run("rest.todos", func(t *testing.T) {
+	t.Run("rest.todos: check after deletion", func(t *testing.T) {
 		var resp struct {
 			Code    int
 			Message string
