@@ -28,48 +28,7 @@ type UpdateTodoInput struct {
 type User struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
-	Role string `json:"role"`
-}
-
-type EnumType string
-
-const (
-	EnumTypeA EnumType = "A"
-	EnumTypeB EnumType = "B"
-)
-
-var AllEnumType = []EnumType{
-	EnumTypeA,
-	EnumTypeB,
-}
-
-func (e EnumType) IsValid() bool {
-	switch e {
-	case EnumTypeA, EnumTypeB:
-		return true
-	}
-	return false
-}
-
-func (e EnumType) String() string {
-	return string(e)
-}
-
-func (e *EnumType) UnmarshalGQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = EnumType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid EnumType", str)
-	}
-	return nil
-}
-
-func (e EnumType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	Role Role   `json:"role"`
 }
 
 type Role string
@@ -110,5 +69,46 @@ func (e *Role) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Role) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type TodoType string
+
+const (
+	TodoTypeTypeA TodoType = "TypeA"
+	TodoTypeTypeB TodoType = "TypeB"
+)
+
+var AllTodoType = []TodoType{
+	TodoTypeTypeA,
+	TodoTypeTypeB,
+}
+
+func (e TodoType) IsValid() bool {
+	switch e {
+	case TodoTypeTypeA, TodoTypeTypeB:
+		return true
+	}
+	return false
+}
+
+func (e TodoType) String() string {
+	return string(e)
+}
+
+func (e *TodoType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TodoType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TodoType", str)
+	}
+	return nil
+}
+
+func (e TodoType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

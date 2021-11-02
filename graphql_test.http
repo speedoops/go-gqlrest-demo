@@ -76,3 +76,18 @@ query queryByName($name: String!) {
 {
   "name": "test"
 }
+
+
+###
+POST http://localhost:8080/graphql HTTP/1.1
+content-type: application/json
+X-Request-Type: GraphQL
+
+query overlapping {
+  overlapping {
+    oneFoo
+    twoFoo
+    oldFoo
+    newFoo
+  }
+}

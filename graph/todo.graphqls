@@ -7,10 +7,10 @@
 
 extend type Mutation {
   createTodo(input: NewTodoInput!): Todo! @http(url: "/api/v1/todos")
-  completeTodo(id: ID!): Todo! @http(url: "/api/v1/todo/{id}/complete")
-  completeTodos(ids: [ID!]): [Todo!] @http(url: "/api/v1/todos/bulk-complete")
   updateTodo(input: UpdateTodoInput!): Todo!
     @http(url: "/api/v1/todo/{id}", method: "PUT")
+  completeTodo(id: ID!): Todo! @http(url: "/api/v1/todo/{id}/complete")
+  completeTodos(ids: [ID!]): [Todo!] @http(url: "/api/v1/todos/bulk-complete")
   deleteTodo(id: ID!): Boolean!
     @http(url: "/api/v1/todo/{id}", method: "DELETE")
   deleteTodoByUser(userID: ID!): Boolean!
@@ -36,11 +36,11 @@ extend type Query {
   todos(
     ids: [ID!]
     userId: ID
-    userId2: ID
+    types: [TodoType]
     text: String
-    text2: String
+    text2: [String]
     done: Boolean
-    done2: Boolean!
+    done2: [Boolean!]
     pageOffset: Int
     pageSize: Int
   ): [Todo!]! @http(url: "/api/v1/todos")
@@ -50,9 +50,15 @@ type Todo {
   text: String!
   done: Boolean! @deprecated(reason: "blah blah")
   user: User! @hide(for: ["rest", "cli"])
+  type: TodoType
   categories: [Category!] @hide(for: ["rest0", "cli"])
 }
 type Category {
   id: ID! @hide(for: ["rest", "cli"])
   name: String!
+}
+
+enum TodoType {
+  TypeA
+  TypeB
 }

@@ -7,7 +7,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
+	"strings"
 
 	"github.com/speedoops/go-gqlrest-demo/graph/errorsx"
 	"github.com/speedoops/go-gqlrest-demo/graph/generated"
@@ -27,21 +29,6 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodoIn
 	return todo, nil
 }
 
-func (r *mutationResolver) CompleteTodo(ctx context.Context, id string) (*model.Todo, error) {
-	list := r.todos
-	for _, l := range list {
-		if l.ID == id {
-			l.Done = true
-			return l, nil
-		}
-	}
-	return nil, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", id))
-}
-
-func (r *mutationResolver) CompleteTodos(ctx context.Context, ids []string) ([]*model.Todo, error) {
-	return nil, nil
-}
-
 func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.Todo, error) {
 	list := r.todos
 	for _, l := range list {
@@ -56,6 +43,21 @@ func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTod
 		}
 	}
 	return nil, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", input.ID))
+}
+
+func (r *mutationResolver) CompleteTodo(ctx context.Context, id string) (*model.Todo, error) {
+	list := r.todos
+	for _, l := range list {
+		if l.ID == id {
+			l.Done = true
+			return l, nil
+		}
+	}
+	return nil, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", id))
+}
+
+func (r *mutationResolver) CompleteTodos(ctx context.Context, ids []string) ([]*model.Todo, error) {
+	return nil, nil
 }
 
 func (r *mutationResolver) DeleteTodo(ctx context.Context, id string) (bool, error) {
@@ -99,7 +101,13 @@ func (r *queryResolver) Todo(ctx context.Context, id string, name *string, tmp *
 	return nil, errorsx.NewNotFoundError(errors.New("not found"))
 }
 
-func (r *queryResolver) Todos(ctx context.Context, ids []string, userID *string, userID2 *string, text *string, text2 *string, done *bool, done2 bool, pageOffset *int, pageSize *int) ([]*model.Todo, error) {
+func (r *queryResolver) Todos(ctx context.Context, ids []string, userID *string, types []*model.TodoType, text *string, text2 []*string, done *bool, done2 []bool, pageOffset *int, pageSize *int) ([]*model.Todo, error) {
+	var text2string []string
+	for _, s := range text2 {
+		text2string = append(text2string, *s)
+	}
+	log.Printf("ids=%v, types=%v, text2=%v, done2=%v\n", ids, types, strings.Join(text2string, ", "), done2)
+
 	list := r.todos
 	if len(ids) > 0 {
 		idmap := make(map[string]int)
@@ -122,6 +130,11 @@ func (r *queryResolver) Todos(ctx context.Context, ids []string, userID *string,
 
 func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
 	return &model.User{ID: obj.UserID, Name: "user " + obj.UserID, Role: "test"}, nil
+}
+
+func (r *todoResolver) Type(ctx context.Context, obj *model.Todo) (*model.TodoType, error) {
+	typ := model.TodoTypeTypeA
+	return &typ, nil
 }
 
 func (r *todoResolver) Categories(ctx context.Context, obj *model.Todo) ([]*model.Category, error) {

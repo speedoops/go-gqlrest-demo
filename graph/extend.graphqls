@@ -11,7 +11,7 @@ directive @goField(
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 extend type Query {
-  overlapping: OverlappingFields
+  overlapping: OverlappingFields @http(url: "/api/v1/overlapping")
 }
 
 type OverlappingFields {
@@ -20,9 +20,4 @@ type OverlappingFields {
   oldFoo: Int! @goField(name: "foo", forceResolver: true)
   newFoo: Int! @hide(for: ["rest", "default"])
   new_foo: Int!
-}
-
-enum EnumType {
-  A
-  B
 }

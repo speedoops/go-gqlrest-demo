@@ -2,15 +2,15 @@
 # https://graphql-rules.com/
 # ----------------
 schema {
-	query: Query
-	mutation: Mutation
+  query: Query
+  mutation: Mutation
 }
 
 type Mutation
 type Query
 
 type User {
-	id: ID!
-	name: String!
-	role: String! @hide(for: ["rest", "cli"])
+  id: ID!
+  name: String!
+  role: Role! @hide(for: ["rest", "cli"])
 }

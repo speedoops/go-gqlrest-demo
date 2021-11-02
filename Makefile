@@ -18,7 +18,8 @@ run:
 	go run main.go
 
 test:
-	go test -timeout 30s -run ^TestTodo ./... -v -coverprofile=coverage.out
+	#go test -timeout 30s -run ^TestTodo ./... -v -failfast -coverpkg=github.com/speedoops/go-gqlrest/... -coverprofile=coverage.out
+	go test -timeout 30s -run ^TestTodo ./... -v -failfast -coverpkg=./...,github.com/speedoops/go-gqlrest/... -coverprofile=coverage.out
 	go tool cover -func=coverage.out | tail -n 1 | awk '{print "Total coverage: " $$3 " of statements"}'
 	go tool cover -html=coverage.out -o coverage.html
 

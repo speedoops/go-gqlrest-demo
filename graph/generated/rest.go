@@ -23,11 +23,14 @@ func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 	// Mapping from `Name` to `TypeKind`
 	restTypes := make(handlerx.StringMap)
 
-	// Statistics: Queries=5, Mutations=6, Enums=25, Inputs=2
+	// Statistics: Queries=5, Mutations=6, Types=25, Inputs=2
 
 	// Part 1/4: Query Objects
 	{
 		{ // overlapping
+			r.Method("GET", prefix+"/api/v1/overlapping", srv)
+
+			restOperation["GET"+":"+prefix+"/api/v1/overlapping"] = "overlapping"
 			restSelection["overlapping"] = "{twoFoo,oldFoo,new_foo}"
 
 			methodArguments := make(handlerx.StringMap)
@@ -37,7 +40,7 @@ func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 			r.Method("GET", prefix+"/api/v1/todos/{id}", srv)
 
 			restOperation["GET"+":"+prefix+"/api/v1/todos/{id}"] = "todo"
-			restSelection["todo"] = "{id,text,done,categories{name}}"
+			restSelection["todo"] = "{id,text,done,type,categories{name}}"
 
 			methodArguments := make(handlerx.StringMap)
 			methodArguments["id"] = "ID!"
@@ -49,16 +52,16 @@ func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 			r.Method("GET", prefix+"/api/v1/todos", srv)
 
 			restOperation["GET"+":"+prefix+"/api/v1/todos"] = "todos"
-			restSelection["todos"] = "{id,text,done,categories{name}}"
+			restSelection["todos"] = "{id,text,done,type,categories{name}}"
 
 			methodArguments := make(handlerx.StringMap)
 			methodArguments["ids"] = "[ID!]"
 			methodArguments["userId"] = "ID"
-			methodArguments["userId2"] = "ID"
+			methodArguments["types"] = "[TodoType]"
 			methodArguments["text"] = "String"
-			methodArguments["text2"] = "String"
+			methodArguments["text2"] = "[String]"
 			methodArguments["done"] = "Boolean"
-			methodArguments["done2"] = "Boolean!"
+			methodArguments["done2"] = "[Boolean!]"
 			methodArguments["pageOffset"] = "Int"
 			methodArguments["pageSize"] = "Int"
 			restArguments["todos"] = methodArguments
@@ -72,17 +75,27 @@ func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 			r.Method("POST", prefix+"/api/v1/todos", srv)
 
 			restOperation["POST"+":"+prefix+"/api/v1/todos"] = "createTodo"
-			restSelection["createTodo"] = "{id,text,done,categories{name}}"
+			restSelection["createTodo"] = "{id,text,done,type,categories{name}}"
 
 			methodArguments := make(handlerx.StringMap)
 			methodArguments["input"] = "NewTodoInput!"
 			restArguments["createTodo"] = methodArguments
 		}
+		{ // updateTodo
+			r.Method("PUT", prefix+"/api/v1/todo/{id}", srv)
+
+			restOperation["PUT"+":"+prefix+"/api/v1/todo/{id}"] = "updateTodo"
+			restSelection["updateTodo"] = "{id,text,done,type,categories{name}}"
+
+			methodArguments := make(handlerx.StringMap)
+			methodArguments["input"] = "UpdateTodoInput!"
+			restArguments["updateTodo"] = methodArguments
+		}
 		{ // completeTodo
 			r.Method("POST", prefix+"/api/v1/todo/{id}/complete", srv)
 
 			restOperation["POST"+":"+prefix+"/api/v1/todo/{id}/complete"] = "completeTodo"
-			restSelection["completeTodo"] = "{id,text,done,categories{name}}"
+			restSelection["completeTodo"] = "{id,text,done,type,categories{name}}"
 
 			methodArguments := make(handlerx.StringMap)
 			methodArguments["id"] = "ID!"
@@ -92,21 +105,11 @@ func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 			r.Method("POST", prefix+"/api/v1/todos/bulk-complete", srv)
 
 			restOperation["POST"+":"+prefix+"/api/v1/todos/bulk-complete"] = "completeTodos"
-			restSelection["completeTodos"] = "{id,text,done,categories{name}}"
+			restSelection["completeTodos"] = "{id,text,done,type,categories{name}}"
 
 			methodArguments := make(handlerx.StringMap)
 			methodArguments["ids"] = "[ID!]"
 			restArguments["completeTodos"] = methodArguments
-		}
-		{ // updateTodo
-			r.Method("PUT", prefix+"/api/v1/todo/{id}", srv)
-
-			restOperation["PUT"+":"+prefix+"/api/v1/todo/{id}"] = "updateTodo"
-			restSelection["updateTodo"] = "{id,text,done,categories{name}}"
-
-			methodArguments := make(handlerx.StringMap)
-			methodArguments["input"] = "UpdateTodoInput!"
-			restArguments["updateTodo"] = methodArguments
 		}
 		{ // deleteTodo
 			r.Method("DELETE", prefix+"/api/v1/todo/{id}", srv)
@@ -134,13 +137,13 @@ func RegisterHandlers(r *chi.Mux, srv http.Handler, prefix string) {
 	// Part 3/4: User Defined Types
 	{
 		restTypes["Category"] = "OBJECT"
-		restTypes["EnumType"] = "ENUM"
 		restTypes["Mutation"] = "OBJECT"
 		restTypes["NewTodoInput"] = "INPUT_OBJECT"
 		restTypes["OverlappingFields"] = "OBJECT"
 		restTypes["Query"] = "OBJECT"
 		restTypes["Role"] = "ENUM"
 		restTypes["Todo"] = "OBJECT"
+		restTypes["TodoType"] = "ENUM"
 		restTypes["UpdateTodoInput"] = "INPUT_OBJECT"
 		restTypes["User"] = "OBJECT"
 	}

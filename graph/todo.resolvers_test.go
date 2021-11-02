@@ -19,6 +19,7 @@ type Todo struct {
 	Text       string           `json:"text"`
 	Done       bool             `json:"done"`
 	User       model.User       `json:"user"`
+	Type       *model.TodoType  `json:"type"`
 	Categories []model.Category `json:"categories"`
 }
 
@@ -93,7 +94,7 @@ func TestTodo(t *testing.T) {
 		}
 		query := `
 		query todos {
-			todos(ids:["T9527"],userId2:"userID2",text2:"text2",done2:true) {
+			todos(ids:["T9527"],types:[TypeA,TypeB],text2:["text1","text2"],done2:[true,false]) {
 				id,text,done
 			}
 		}
@@ -132,7 +133,7 @@ func TestTodo(t *testing.T) {
 		}
 		query := `
 		query todos {
-			todos(userId2:"userID2",text2:"text2",done2:true) {
+			todos(types:[TypeA,TypeB],text2:["text1","text2"],done2:[true,false]) {
 				id,text,done
 			}
 		}
@@ -227,14 +228,14 @@ func TestTodos_REST(t *testing.T) {
 			Data    []Todo
 		}
 
-		err := c.Get("/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true", &resp)
+		err := c.Get("/api/v1/todos?ids=T9527&types=TypeA,TypeB&text2=text1,text2&done2=true,false", &resp)
 		require.Nil(t, err)
 		if !FoundT9527(resp.Data) {
 			t.Fail()
 		}
 		t.Logf("%+v", resp.Data)
 
-		err = c.Get("/api/v1/todos?ids=FakeID111,FakeID222&userId2=userId2&text2=text2&done2=true", &resp)
+		err = c.Get("/api/v1/todos?ids=FakeID111,FakeID222&types=TypeA,TypeB&text2=text1,text2&done2=true,false", &resp)
 		require.Nil(t, err)
 		if FoundT9527(resp.Data) {
 			t.Fail()
@@ -254,7 +255,7 @@ func TestTodos_REST(t *testing.T) {
 			Data    []Todo
 		}
 
-		err := c.Get("/api/v1/todos?ids=T9527,T666&userId2=userId2&text2=text2&done2=true", &resp)
+		err := c.Get("/api/v1/todos?ids=T9527,T666&types=TypeA,TypeB&text2=text1,text2&done2=true,false", &resp)
 		require.Nil(t, err)
 
 		for _, v := range resp.Data {
@@ -299,7 +300,7 @@ func TestTodos_GET(t *testing.T) {
 			Data    []Todo
 		}
 
-		err := c.Get("/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true", &resp)
+		err := c.Get("/api/v1/todos?ids=T9527&types=TypeA,TypeB&text2=text1,text2&done2=true,false", &resp)
 		require.Nil(t, err)
 
 		for _, v := range resp.Data {

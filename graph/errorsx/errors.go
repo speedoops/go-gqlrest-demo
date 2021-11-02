@@ -160,7 +160,7 @@ func AppErrorPresenter(ctx context.Context, e error) *gqlerror.Error {
 		return err
 	}
 
-	err.Message = fmt.Sprintf("APIGW.InternalError: %s\n %#v", err.Message, e)
+	err.Message = fmt.Sprintf("APIGW.InternalError: %s %+v", err.Message, e)
 	errcode.Set(err, "500")
 	return err
 }
