@@ -17,4 +17,6 @@ require (
 	github.com/vektah/gqlparser/v2 v2.2.0
 )
 
-//replace github.com/speedoops/go-gqlrest => ../go-gqlrest
+replace github.com/speedoops/go-gqlrest => ../go-gqlrest
+
+replace github.com/vektah/gqlparser/v2 v2.2.0 => github.com/speedoops/gqlparser/v2 v2.4.6
