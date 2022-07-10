@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"encoding/json"
+
 	gqlcli "github.com/99designs/gqlgen/client"
 	"github.com/speedoops/go-gqlrest-demo/graph/engine"
 	"github.com/speedoops/go-gqlrest-demo/graph/model"
@@ -327,7 +329,7 @@ func TestTodos_PUT(t *testing.T) {
 		err := c.Put("/api/v1/todo/T9527?userID=uid", &resp, restcli.Body(payload))
 		require.NotNil(t, err)
 		t.Logf("%+v", err)
-		require.Contains(t, err.Error(), "code 404")
+		require.Contains(t, err.Error(), "http 404")
 	})
 }
 
@@ -337,7 +339,9 @@ func TestTodos_DELETE(t *testing.T) {
 
 	t.Run("rest.deleteTodo", func(t *testing.T) {
 		err := c.Delete("/api/v1/todo/T9527", nil)
-		require.Nil(t, err)
+		require.NotNil(t, err)
+		t.Logf("%+v", err)
+		require.Contains(t, err.Error(), "http 404")
 	})
 
 	t.Run("rest.deleteTodoByUser", func(t *testing.T) {
@@ -345,5 +349,109 @@ func TestTodos_DELETE(t *testing.T) {
 		require.NotNil(t, err)
 		t.Logf("%+v", err)
 		require.Contains(t, err.Error(), "http 404")
+	})
+}
+
+func TestCreateTodo_REST(t *testing.T) {
+	s := engine.NewMockServer(&Resolver{})
+	c := restcli.New(s, restcli.Prefix(""))
+
+	t.Run("测试普通字符串", func(t *testing.T) {
+		var resp struct {
+			Code    int    `json:"code"`
+			Message string `json:"message"`
+			Data    Todo   `json:"data"`
+		}
+
+		payload := `{"input": {"userID":"uid", "text":"$text"}}`
+		err := c.Post("/api/v1/todos", &resp, restcli.Body(payload))
+		require.Nil(t, err)
+		require.NotEmpty(t, resp.Data)
+
+		t.Logf("%+v", resp.Data)
+	})
+
+	t.Run("测试字符串，包含一个ASCII字符\u0001", func(t *testing.T) {
+		var resp struct {
+			Code    int
+			Message string
+			Data    Todo
+		}
+
+		var input struct {
+			Input model.NewTodoInput `json:"input"`
+		}
+		done := true
+		input.Input.UserID = "uid"
+		input.Input.Done = &done
+		input.Input.Text = "测试字符串，包含一个ASCII字符\u0001"
+		payload, err := json.Marshal(input)
+		require.Nil(t, err)
+
+		err = c.Post("/api/v1/todos", &resp, restcli.Body(string(payload)))
+		require.Nil(t, err)
+		require.NotEmpty(t, resp.Data)
+
+		t.Logf("%+v", resp.Data)
+	})
+
+	t.Run("测试字符串，包含多个ASCII字符\u0001", func(t *testing.T) {
+		var resp struct {
+			Code    int
+			Message string
+			Data    Todo
+		}
+
+		var input struct {
+			Input model.NewTodoInput `json:"input"`
+		}
+
+		done := true
+		input.Input.Done = &done
+		input.Input.UserID = "uid"
+		input.Input.Text = "\u0001测试字符串，包含多个\u0001包含ASCII字符\u0001"
+		payload, err := json.Marshal(input)
+		require.Nil(t, err)
+
+		err = c.Post("/api/v1/todos", &resp, restcli.Body(string(payload)))
+		require.Nil(t, err)
+		require.NotEmpty(t, resp.Data)
+
+		t.Logf("%+v", resp.Data)
+	})
+
+	t.Run("测试字符串存储json对象，对象包含ASCII字符\u0001", func(t *testing.T) {
+		var resp struct {
+			Code    int
+			Message string
+			Data    Todo
+		}
+
+		var obj struct {
+			Seq  int    `json:"seq"`
+			Data string `json:"data"`
+		}
+
+		obj.Seq = 100
+		obj.Data = "\u0001json对象包含多个\u0001ASCII字符\u0001"
+		byteData, err := json.Marshal(obj)
+
+		var input struct {
+			Input model.NewTodoInput `json:"input"`
+		}
+
+		done := true
+		input.Input.Done = &done
+		input.Input.UserID = "uid"
+		input.Input.Text = "字符串存储json对象\u0001," + string(byteData)
+
+		payload, err := json.Marshal(input)
+		require.Nil(t, err)
+
+		err = c.Post("/api/v1/todos", &resp, restcli.Body(string(payload)))
+		require.Nil(t, err)
+		require.NotEmpty(t, resp.Data)
+
+		t.Logf("%+v", resp.Data)
 	})
 }
