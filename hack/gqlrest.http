@@ -96,7 +96,9 @@ GET http://localhost:8080/api/v1/overlapping
 #------------------------------
 
 
-### null
+### 
+# Input: null 后面跟个多余的逗号
+# Error: json body could not be decoded: invalid character '}' looking for beginning of object key string
 POST http://localhost:8080/api/v1/todos HTTP/1.1
 content-type: application/json
 
@@ -104,11 +106,13 @@ content-type: application/json
     "userID":"uid",
     "text":"text",
     "done": false,
-    "categories":null,
+    "categories":null
 }
 
 
-### timestamp
+### 
+# Input: input text for int type
+# Error: 
 POST http://localhost:8080/api/v1/todos HTTP/1.1
 content-type: application/json
 
@@ -116,5 +120,5 @@ content-type: application/json
     "userID":"uid",
     "text":"text",
     "done": false,
-    "timestamp":null,
+    "timestamp":"11 323"
 }

@@ -23,6 +23,7 @@ input NewTodoInput {
   text: String!
   userID: String!
   done: Boolean
+  timestamp: Int
 }
 
 input UpdateTodoInput {
