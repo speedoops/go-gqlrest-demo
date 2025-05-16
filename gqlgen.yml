@@ -8,9 +8,9 @@ exec:
   package: zgenerated
 
 # Enable Apollo federation support
-federation:
-  filename: graph/zgenerated/federation.go
-  package: zgenerated
+# federation:
+#   filename: graph/zgenerated/federation.go
+#   package: zgenerated
 
 # Where should any generated models go?
 model:
@@ -53,3 +53,5 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+#
+# omit_getters: true

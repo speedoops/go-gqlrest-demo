@@ -1,3 +1,8 @@
+#==============================
+# GraphQL Client
+# Need to install [REST Client](https://marketplace.visualstudio.com/items/?itemName=humao.rest-client) vscode extention first.
+#==============================
+
 ### TODO 样例
 POST http://localhost:8080/query HTTP/1.1
 content-type: application/json
