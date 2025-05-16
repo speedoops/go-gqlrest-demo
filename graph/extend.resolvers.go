@@ -7,20 +7,22 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/speedoops/go-gqlrest-demo/graph/generated"
 	"github.com/speedoops/go-gqlrest-demo/graph/model"
+	generated1 "github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
 )
 
+// OldFoo is the resolver for the oldFoo field.
 func (r *overlappingFieldsResolver) OldFoo(ctx context.Context, obj *model.OverlappingFields) (int, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// Overlapping is the resolver for the overlapping field.
 func (r *queryResolver) Overlapping(ctx context.Context) (*model.OverlappingFields, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// OverlappingFields returns generated.OverlappingFieldsResolver implementation.
-func (r *Resolver) OverlappingFields() generated.OverlappingFieldsResolver {
+// OverlappingFields returns generated1.OverlappingFieldsResolver implementation.
+func (r *Resolver) OverlappingFields() generated1.OverlappingFieldsResolver {
 	return &overlappingFieldsResolver{r}
 }
 

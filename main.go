@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,7 +11,7 @@ import (
 	"github.com/google/gops/agent"
 	"github.com/speedoops/go-gqlrest-demo/graph"
 	"github.com/speedoops/go-gqlrest-demo/graph/engine"
-	"github.com/speedoops/go-gqlrest-demo/graph/generated"
+	generated "github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
 	"github.com/speedoops/go-gqlrest/handlerx"
 )
 
@@ -24,6 +25,9 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
+
+	nodeVmId := "xxx"
+	fmt.Println(nodeVmId)
 
 	// var c config.Config
 	// //conf.MustLoad(FindConfigFile("config.yaml"), &c)

@@ -12,10 +12,11 @@ import (
 	"strings"
 
 	"github.com/speedoops/go-gqlrest-demo/graph/errorsx"
-	"github.com/speedoops/go-gqlrest-demo/graph/generated"
 	"github.com/speedoops/go-gqlrest-demo/graph/model"
+	generated1 "github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
 )
 
+// CreateTodo is the resolver for the createTodo field.
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodoInput) (*model.Todo, error) {
 	todo := &model.Todo{
 		Text:   input.Text,
@@ -29,6 +30,7 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodoIn
 	return todo, nil
 }
 
+// UpdateTodo is the resolver for the updateTodo field.
 func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.Todo, error) {
 	list := r.todos
 	for _, l := range list {
@@ -45,6 +47,7 @@ func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTod
 	return nil, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", input.ID))
 }
 
+// CompleteTodo is the resolver for the completeTodo field.
 func (r *mutationResolver) CompleteTodo(ctx context.Context, id string) (*model.Todo, error) {
 	list := r.todos
 	for _, l := range list {
@@ -56,10 +59,12 @@ func (r *mutationResolver) CompleteTodo(ctx context.Context, id string) (*model.
 	return nil, errorsx.NewNotFoundError(fmt.Errorf("not found(%s)", id))
 }
 
+// CompleteTodos is the resolver for the completeTodos field.
 func (r *mutationResolver) CompleteTodos(ctx context.Context, ids []string) ([]*model.Todo, error) {
 	return nil, nil
 }
 
+// DeleteTodo is the resolver for the deleteTodo field.
 func (r *mutationResolver) DeleteTodo(ctx context.Context, id string) (bool, error) {
 	n := 0
 	list := r.todos
@@ -76,6 +81,7 @@ func (r *mutationResolver) DeleteTodo(ctx context.Context, id string) (bool, err
 	return true, nil
 }
 
+// DeleteTodoByUser is the resolver for the deleteTodoByUser field.
 func (r *mutationResolver) DeleteTodoByUser(ctx context.Context, userID string) (bool, error) {
 	n := 0
 	list := r.todos
@@ -92,6 +98,7 @@ func (r *mutationResolver) DeleteTodoByUser(ctx context.Context, userID string) 
 	return true, nil
 }
 
+// Todo is the resolver for the todo field.
 func (r *queryResolver) Todo(ctx context.Context, id string, name *string, tmp *int) (*model.Todo, error) {
 	for _, l := range r.todos {
 		if l.ID == id {
@@ -101,6 +108,7 @@ func (r *queryResolver) Todo(ctx context.Context, id string, name *string, tmp *
 	return nil, errorsx.NewNotFoundError(errors.New("not found"))
 }
 
+// Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context, ids []string, userID *string, types []*model.TodoType, text *string, text2 []*string, done *bool, done2 []bool, pageOffset *int, pageSize *int) ([]*model.Todo, error) {
 	var text2string []string
 	for _, s := range text2 {
@@ -128,21 +136,24 @@ func (r *queryResolver) Todos(ctx context.Context, ids []string, userID *string,
 	return list, nil
 }
 
+// User is the resolver for the user field.
 func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
 	return &model.User{ID: obj.UserID, Name: "user " + obj.UserID, Role: "test"}, nil
 }
 
+// Type is the resolver for the type field.
 func (r *todoResolver) Type(ctx context.Context, obj *model.Todo) (*model.TodoType, error) {
 	typ := model.TodoTypeTypeA
 	return &typ, nil
 }
 
+// Categories is the resolver for the categories field.
 func (r *todoResolver) Categories(ctx context.Context, obj *model.Todo) ([]*model.Category, error) {
 	category := model.Category{ID: "1", Name: "Category"}
 	return []*model.Category{&category}, nil
 }
 
-// Todo returns generated.TodoResolver implementation.
-func (r *Resolver) Todo() generated.TodoResolver { return &todoResolver{r} }
+// Todo returns generated1.TodoResolver implementation.
+func (r *Resolver) Todo() generated1.TodoResolver { return &todoResolver{r} }
 
 type todoResolver struct{ *Resolver }

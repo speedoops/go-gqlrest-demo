@@ -86,6 +86,9 @@ linters-settings:
       - name: superfluous-else
       - name: time-naming
       - name: var-naming
+        arguments:
+          - [ID]  # whitelist，不要求严格大小写，可以写成 ID，也可以写成 Id
+          - [VM]  # blacklist，必须严格按此大小写，只能写成 VM，不能写成 Vm
       - name: var-declaration
       - name: unconditional-recursion
       - name: unexported-naming
@@ -98,3 +101,7 @@ linters-settings:
       - name: unused-receiver
         disabled: true
       - name: waitgroup-by-value
+  gocyclo:
+    # Minimal code complexity to report.
+    # Default: 30 (but we recommend 10-20)
+    min-complexity: 10

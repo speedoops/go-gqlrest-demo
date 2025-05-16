@@ -1,6 +1,11 @@
-###############################
+#==============================
+# REST Client
+# Need to install [REST Client](https://marketplace.visualstudio.com/items/?itemName=humao.rest-client) vscode extention first.
+#==============================
+
+#------------------------------
 # REST style 1, well supported
-###############################
+#------------------------------
 
 ###
 GET http://localhost:8080/api/v1/todos?userId2=userId2&text2=text2&done2=true
@@ -27,9 +32,9 @@ DELETE http://localhost:8080/api/v1/todo/T95270
 GET http://localhost:8080/api/v1/todos?ids=T9527&userId2=userId2&text2=text2&done2=true
 
 
-###############################
+#------------------------------
 # REST style 2, not supported yet
-###############################
+#------------------------------
 
 ###
 POST http://localhost:8080/api/v1/todos HTTP/1.1
@@ -38,7 +43,7 @@ content-type: application/json
 {
     "userID":"uid",
     "text":"text",
-    "done": false
+    "done": false,
 }
 
 ###
@@ -83,3 +88,33 @@ DELETE http://localhost:8080/api/v1/todos/uid0
 
 ###
 GET http://localhost:8080/api/v1/overlapping
+
+
+
+#------------------------------
+# Exceptions
+#------------------------------
+
+
+### null
+POST http://localhost:8080/api/v1/todos HTTP/1.1
+content-type: application/json
+
+{
+    "userID":"uid",
+    "text":"text",
+    "done": false,
+    "categories":null,
+}
+
+
+### timestamp
+POST http://localhost:8080/api/v1/todos HTTP/1.1
+content-type: application/json
+
+{
+    "userID":"uid",
+    "text":"text",
+    "done": false,
+    "timestamp":null,
+}

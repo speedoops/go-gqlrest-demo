@@ -4,13 +4,13 @@ schema:
 
 # Where should the generated server code go?
 exec:
-  filename: graph/generated/generated.go
-  package: generated
+  filename: graph/zgenerated/generated.go
+  package: zgenerated
 
 # Enable Apollo federation support
 federation:
-  filename: graph/generated/federation.go
-  package: generated
+  filename: graph/zgenerated/federation.go
+  package: zgenerated
 
 # Where should any generated models go?
 model:

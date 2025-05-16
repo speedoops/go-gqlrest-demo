@@ -11,8 +11,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	"github.com/speedoops/go-gqlrest-demo/config"
-	"github.com/speedoops/go-gqlrest-demo/graph/generated"
-	"github.com/tal-tech/go-zero/core/logx"
+	generated "github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 var _server http.Handler

@@ -8,10 +8,10 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/speedoops/go-gqlrest-demo/graph/errorsx"
-	"github.com/speedoops/go-gqlrest-demo/graph/generated"
 	"github.com/speedoops/go-gqlrest-demo/graph/model"
+	generated "github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
 	"github.com/speedoops/go-gqlrest/handlerx"
-	"github.com/tal-tech/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 func NewServer(resolver generated.ResolverRoot) *handler.Server {

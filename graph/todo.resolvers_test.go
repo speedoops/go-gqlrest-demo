@@ -434,7 +434,7 @@ func TestCreateTodo_REST(t *testing.T) {
 
 		obj.Seq = 100
 		obj.Data = "\u0001json对象包含多个\u0001ASCII字符\u0001"
-		byteData, err := json.Marshal(obj)
+		byteData, _ := json.Marshal(obj)
 
 		var input struct {
 			Input model.NewTodoInput `json:"input"`

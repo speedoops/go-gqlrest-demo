@@ -4,7 +4,7 @@ all: gen build test lint
 
 gen:
 	@# https://github.com/golang/go/issues/44129 // add "-mod=mod" as workaround for go 1.16 bug
-	go run -mod=mod github.com/speedoops/go-gqlrest
+	go run -mod=mod github.com/speedoops/go-gqlrest -verbose
 
 build:
 	go build
