@@ -6,13 +6,16 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/gops/agent"
+
+	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/speedoops/go-gqlrest/handlerx"
+	_ "golang.org/x/tools/imports" // 需要这个导入依赖，否则`make gen`会报错
+
 	"github.com/speedoops/go-gqlrest-demo/graph"
 	"github.com/speedoops/go-gqlrest-demo/graph/engine"
-	generated "github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
-	"github.com/speedoops/go-gqlrest/handlerx"
+	"github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
 )
 
 const defaultPort = "8080"
@@ -41,7 +44,7 @@ func main() {
 	mux.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	mux.Handle("/query", srv)
 	mux.Handle("/graphql", srv)
-	generated.RegisterHandlers(mux, srv, "")
+	zgenerated.RegisterHandlers(mux, srv, "")
 	handlerx.RegisterPrinter(&LogPrinter{})
 
 	_ = mux.ServeHTTP // 调试入口1：HTTP Server Entry

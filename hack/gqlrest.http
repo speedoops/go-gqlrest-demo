@@ -43,11 +43,11 @@ content-type: application/json
 {
     "userID":"uid",
     "text":"text",
-    "done": false,
+    "done": false
 }
 
 ###
-POST http://localhost:8080/api/v1/todo/{id}/complete HTTP/1.1
+POST http://localhost:8080/api/v1/todo/T9527/complete HTTP/1.1
 content-type: application/json
 
 {

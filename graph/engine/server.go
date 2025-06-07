@@ -9,13 +9,13 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/speedoops/go-gqlrest-demo/graph/errorsx"
 	"github.com/speedoops/go-gqlrest-demo/graph/model"
-	generated "github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
+	"github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
 	"github.com/speedoops/go-gqlrest/handlerx"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-func NewServer(resolver generated.ResolverRoot) *handler.Server {
-	c := generated.Config{Resolvers: resolver}
+func NewServer(resolver zgenerated.ResolverRoot) *handler.Server {
+	c := zgenerated.Config{Resolvers: resolver}
 	c.Directives.HasRole = func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (interface{}, error) {
 		if !getCurrentUser(ctx).HasRole(role) {
 			// block calling the next resolver
@@ -40,7 +40,7 @@ func NewServer(resolver generated.ResolverRoot) *handler.Server {
 		return next(ctx)
 	}
 
-	srv := handlerx.NewDefaultServer(generated.NewExecutableSchema(c))
+	srv := handlerx.NewDefaultServer(zgenerated.NewExecutableSchema(c))
 	srv.SetErrorPresenter(errorsx.AppErrorPresenter)
 	srv.SetRecoverFunc(func(ctx context.Context, err interface{}) error {
 		logx.ErrorStack("internal server error")
