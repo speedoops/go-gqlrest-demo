@@ -46,6 +46,7 @@ extend type Query {
     pageSize: Int
   ): [Todo!]! @http(url: "/api/v1/todos")
 }
+
 type Todo {
   id: ID!
   text: String!
@@ -54,6 +55,7 @@ type Todo {
   type: TodoType
   categories: [Category!] @hide(for: ["rest0", "cli"])
 }
+
 type Category {
   id: ID! @hide(for: ["rest", "cli"])
   name: String!

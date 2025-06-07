@@ -11,13 +11,13 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	"github.com/speedoops/go-gqlrest-demo/config"
-	generated "github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
+	"github.com/speedoops/go-gqlrest-demo/graph/zgenerated"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
 var _server http.Handler
 
-func GetMockServer(resolver generated.ResolverRoot) http.Handler {
+func GetMockServer(resolver zgenerated.ResolverRoot) http.Handler {
 	if _server != nil {
 		return _server
 	}
@@ -25,7 +25,7 @@ func GetMockServer(resolver generated.ResolverRoot) http.Handler {
 	return NewMockServer(resolver)
 }
 
-func NewMockServer(resolver generated.ResolverRoot) http.Handler {
+func NewMockServer(resolver zgenerated.ResolverRoot) http.Handler {
 	// 1. 初始化服务端配置
 	var c config.Config
 	//conf.MustLoad(FindConfigFile("config.yaml"), &c)
@@ -39,7 +39,7 @@ func NewMockServer(resolver generated.ResolverRoot) http.Handler {
 	mux := chi.NewRouter()
 	mux.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	mux.Handle("/query", srv)
-	generated.RegisterHandlers(mux, srv, "")
+	zgenerated.RegisterHandlers(mux, srv, "")
 
 	return mux
 }
